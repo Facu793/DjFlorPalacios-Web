@@ -130,19 +130,19 @@ export default function App() {
           <div className="modules" style={{gridTemplateColumns:'1fr 1fr', gap:'20px'}}>
             <div className="module-card reveal">
               <p>
-                 Flor Palacios es una DJ oriunda de Santa Fe, Argentina.
+                Flor Palacios es una DJ oriunda de Santa Fe, Argentina.
                 Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽.
                 Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios.
                 Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. 
                 Su objetivo es claro: transmitir emociones y generar conexión en la pista.
+              </p>
+              <p style={{marginTop:10}}>  
                 En su recorrido compartió cabina con DJs nacionales e internacionales como Budakid, Chapa & Castelo, Greta Meier, John Cosani y Kabi, entre otros.
                 Esto le permitió presentarse en ciudades como Buenos Aires, Rosario y Bariloche, y también expandir su música fuera del país, con presentaciones en Tulum (México).
-                Actualmente, Flor está perfeccionándose en producción musical junto a referentes del género, como Ignacio Berardi, Agustín Pietrocola; con el objetivo de lanzar sus próximos tracks.
               </p>
               <p style={{marginTop:10}}>
-                Su sonido se mueve entre el Progressive House, Deep House e Indie Dance,
-                siempre con un enfoque versátil que se adapta al contexto y a la energía del
-                público. Su objetivo es claro: transmitir emociones y generar conexión en la pista.
+                Actualmente, Flor está perfeccionándose en producción musical junto a referentes del género,
+                como Ignacio Berardi, Agustín Pietrocola; con el objetivo de lanzar sus próximos tracks.
               </p>
             </div>
             <div className="module-card reveal">
