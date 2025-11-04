@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react'
 
 export default function App() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const canvasRef = useRef(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const canvasEl = canvas
     const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches
-    const ctx = canvas.getContext('2d')!
+    const ctx = canvas.getContext('2d')
     let width = 0, height = 0, dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1))
     let raf = 0
 
@@ -37,7 +37,7 @@ export default function App() {
       }
     })
 
-    function drawRadial(x: number, y: number, r: number, hue: number) {
+    function drawRadial(x, y, r, hue) {
       const grad = ctx.createRadialGradient(x, y, 0, x, y, r)
       grad.addColorStop(0.0, `hsla(${hue}, 100%, 65%, 0.34)`)
       grad.addColorStop(0.45, `hsla(${hue}, 100%, 55%, 0.18)`)
@@ -49,7 +49,7 @@ export default function App() {
     }
 
     let last = performance.now()
-    const frame = (now: number) => {
+    const frame = (now) => {
       const dt = Math.min(32, now - last); last = now
       ctx.clearRect(0, 0, width, height)
       ctx.globalCompositeOperation = 'lighter'
@@ -81,13 +81,30 @@ export default function App() {
       <header>
         <div className="container nav">
           <div className="logo">DJ PRESSKIT • Florencia Palacios</div>
-          <nav style={{display:'flex', gap:12}}>
-            <a className="pill" href="#eventos">Eventos</a>
-            <a className="pill" href="#bio">Bio</a>
-            <a className="pill" href="#lanzamientos">Releases</a>
-            <a className="pill" href="#rider">Rider</a>
-            <a className="pill" href="#contacto">Contacto</a>
-          </nav>
+          <div className="social-actions">
+            <a className="social-btn sc" aria-label="SoundCloud" title="SoundCloud" href="https://soundcloud.com/florpalaciosdj" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M1.175 13.5c-.317 0-.575-.258-.575-.575v-2.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v2.85c0 .317-.258.575-.575.575zm1.425 2.5c-.317 0-.575-.258-.575-.575v-4.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v4.85c0 .317-.258.575-.575.575zm1.425 2.5c-.317 0-.575-.258-.575-.575v-6.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v6.85c0 .317-.258.575-.575.575zm1.425 1.5c-.317 0-.575-.258-.575-.575V8.075c0-.317.258-.575.575-.575.317 0 .575.258.575.575v13.85c0 .317-.258.575-.575.575zm1.425-1.5c-.317 0-.575-.258-.575-.575v-6.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v6.85c0 .317-.258.575-.575.575zm1.425-2.5c-.317 0-.575-.258-.575-.575v-4.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v4.85c0 .317-.258.575-.575.575zm1.425-2.5c-.317 0-.575-.258-.575-.575v-2.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v2.85c0 .317-.258.575-.575.575zm8.925-1.425c-3.1 0-5.625 2.425-5.85 5.5-.113.15-.188.325-.188.525 0 .55.45 1 1 1h10.075c2.925 0 5.3-2.375 5.3-5.3 0-2.925-2.375-5.3-5.3-5.3-.113 0-.225.013-.338.038.113-.3.188-.625.188-.962 0-1.8-1.45-3.25-3.25-3.25-1.125 0-2.125.575-2.7 1.45-.45-.275-.975-.45-1.55-.45-1.4 0-2.5 1.1-2.5 2.5 0 .325.075.625.2.9-.125-.05-.25-.075-.387-.075-.675 0-1.225.55-1.225 1.225 0 .338.138.637.362.85-.225-.05-.45-.075-.675-.075-1.1 0-2 .9-2 2 0 .5.188.938.488 1.275z"/>
+              </svg>
+            </a>
+            <a className="social-btn ig" aria-label="Instagram" title="Instagram" href="https://www.instagram.com/florpalaciosok?igsh=MXJ0ZjNtdDFuNHlpdQ%3D%3D&utm_source=qr" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M16 2H8a6 6 0 0 0-6 6v8a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6V8a6 6 0 0 0-6-6Z"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1"/>
+              </svg>
+            </a>
+            <a className="social-btn yt" aria-label="YouTube" title="YouTube" href="https://youtube.com/@florpalaciosdj?si=sxNxK9raRLNTbXfw" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+            </a>
+            <a className="social-btn mail" aria-label="Email" title="Email" href="mailto:mariaflorenciapalacios@gmail.com">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/>
+              </svg>
+            </a>
+          </div>
         </div>
       </header>
       <div className="top-logo">
@@ -106,20 +123,6 @@ export default function App() {
           />
           <div className="subtitle">DJ / Productora</div>
           <div className="genres">TECHNO • DEEP HOUSE • PROGRESSIVE HOUSE <span className="badge">•</span></div>
-          <div className="social-actions">
-            <a className="social-btn sc" aria-label="SoundCloud" title="SoundCloud" href="https://soundcloud.com/florpalaciosdj" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 14.5a2.5 2.5 0 0 0 2.5 2.5H20a3 3 0 0 0 0-6 3.5 3.5 0 0 0-1.386.29A6 6 0 0 0 7 11.5v5H5.5A2.5 2.5 0 0 1 3 14.5Z"/></svg>
-            </a>
-            <a className="social-btn ig" aria-label="Instagram" title="Instagram" href="https://www.instagram.com/florpalaciosok?igsh=MXJ0ZjNtdDFuNHlpdQ%3D%3D&utm_source=qr" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm0 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm5.75-2.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z"/></svg>
-            </a>
-            <a className="social-btn yt" aria-label="YouTube" title="YouTube" href="https://youtube.com/@florpalaciosdj?si=sxNxK9raRLNTbXfw" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 12.08s0-3.09-.4-4.45a3 3 0 0 0-2.12-2.13C18.99 5 12 5 12 5s-6.99 0-8.48.5A3 3 0 0 0 1.4 7.63C1 8.99 1 12.08 1 12.08s0 3.09.4 4.45a3 3 0 0 0 2.12 2.13C4.99 19.16 12 19.16 12 19.16s6.99 0 8.48-.5a3 3 0 0 0 2.12-2.13c.4-1.36.4-4.45.4-4.45ZM9.75 15.02v-5.9l5.66 2.95-5.66 2.95Z"/></svg>
-            </a>
-            <a className="social-btn mail" aria-label="Email" title="Email" href="mailto:mariaflorenciapalacios@gmail.com">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 2v.217l9 5.4 9-5.4V7H3Zm18 10V9.383l-8.553 5.132a2 2 0 0 1-1.894 0L2 9.383V17h19Z"/></svg>
-            </a>
-          </div>
         </section>
 
         
@@ -275,5 +278,4 @@ export default function App() {
     </>
   )
 }
-
 
