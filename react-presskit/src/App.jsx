@@ -76,6 +76,100 @@ export default function App() {
     return () => io.disconnect()
   }, [])
 
+  useEffect(() => {
+    // Inicializar smooth scroll siempre (ignorar prefers-reduced-motion para esta funcionalidad)
+    console.log('Smooth scroll initialized')
+    
+    let scrollPosition = window.scrollY || window.pageYOffset
+    let targetPosition = scrollPosition
+    let isScrolling = false
+    let rafId = null
+
+    const smoothScroll = () => {
+      const distance = targetPosition - scrollPosition
+      
+      // Si hay distancia hacia el objetivo, aplicar suavizado
+      if (Math.abs(distance) > 0.1) {
+        // Interpolación suave con easing
+        scrollPosition += distance * 0.12
+        window.scrollTo(0, Math.round(scrollPosition))
+        rafId = requestAnimationFrame(smoothScroll)
+      } else {
+        // Detener animación completamente
+        scrollPosition = targetPosition
+        window.scrollTo(0, Math.round(scrollPosition))
+        isScrolling = false
+        if (rafId) {
+          cancelAnimationFrame(rafId)
+          rafId = null
+        }
+      }
+    }
+
+    const handleWheel = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      
+      const delta = e.deltaY
+      
+      // Actualizar posición objetivo directamente
+      targetPosition += delta
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+      targetPosition = Math.max(0, Math.min(targetPosition, maxScroll))
+      
+      // Si no está animando, iniciar
+      if (!isScrolling) {
+        isScrolling = true
+        scrollPosition = window.scrollY || window.pageYOffset
+        rafId = requestAnimationFrame(smoothScroll)
+      }
+    }
+
+    const handleTouchStart = (e) => {
+      scrollPosition = window.scrollY || window.pageYOffset
+      targetPosition = scrollPosition
+    }
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 1) {
+        e.preventDefault()
+        const touch = e.touches[0]
+        const currentY = touch.clientY
+        const lastY = window.lastTouchY || currentY
+        const delta = lastY - currentY
+        window.lastTouchY = currentY
+        
+        targetPosition -= delta
+        
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+        targetPosition = Math.max(0, Math.min(targetPosition, maxScroll))
+
+        if (!isScrolling) {
+          isScrolling = true
+          rafId = requestAnimationFrame(smoothScroll)
+        }
+      }
+    }
+
+    const handleTouchEnd = (e) => {
+      window.lastTouchY = null
+    }
+
+    // Agregar listeners
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: false })
+    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchend', handleTouchEnd)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
+  }, [])
+
   return (
     <>
       <canvas ref={canvasRef} id="bg-canvas" aria-hidden="true" style={{position:'fixed', inset:0, zIndex:-2, width:'100vw', height:'100vh', pointerEvents:'none'}} />
@@ -143,9 +237,10 @@ export default function App() {
               <p style={{marginTop:10}}>
                 Actualmente, Flor está perfeccionándose en producción musical junto a referentes del género,
                 como Ignacio Berardi, Agustín Pietrocola; con el objetivo de lanzar sus próximos tracks.
+                
               </p>
             </div>
-            <div className="module-card reveal">
+            <div className="module-card reveal sticky-image" style={{position:'sticky', top:'70px', alignSelf:'start'}}>
               <img 
                 src="/image/imagenCuerpo/image1.JPEG" 
                 alt="Flor Palacios DJ" 

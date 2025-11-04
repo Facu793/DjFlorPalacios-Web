@@ -10,6 +10,10 @@
   --surface-2: rgba(255,255,255,0.1);
 }
 * { box-sizing: border-box; }
+html { 
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
 html, body, #root { height: 100%; }
 body {
   margin: 0;
@@ -19,6 +23,7 @@ body {
   line-height: 1.55;
   overflow-x: hidden;
   padding-top: 70px;
+  scroll-behavior: smooth;
 }
 body::before,
 body::after {
@@ -140,6 +145,7 @@ section { padding: 28px 0 6px; }
 .section-title { font-size: 18px; color: #ffd3ec; letter-spacing: 8px; text-transform: uppercase; text-align: center; margin: 8px 0 22px; text-shadow: 0 0 10px rgba(255,110,199,.25); }
 .modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .module-card { background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border: 1px solid var(--surface); border-radius: 16px; padding: 16px; box-shadow: 0 6px 30px rgba(255,45,161,0.06); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.sticky-image { will-change: transform; transform: translateZ(0); backface-visibility: hidden; }
 .module-card:hover { transform: translateY(-3px); border-color: rgba(255,45,161,.35); box-shadow: 0 10px 36px rgba(255,45,161,0.14); }
 .module-card h3 { margin: 0 0 8px; font-weight: 800; letter-spacing: 2px; color: #ffd3ec; text-transform: uppercase; text-shadow: 0 0 10px rgba(255,110,199,.25); }
 .module-card p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.7; font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif; }
