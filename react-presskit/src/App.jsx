@@ -107,22 +107,17 @@ export default function App() {
         </div>
       </header>
       <div className="top-logo">
-        <div className="top-logo-left">
+        <div className="top-logo-center">
           <img
             src="/image/tipografia/FlorPalacioSuperpuesto blanco.png"
             alt="Flor Palacios"
-            className="top-logo-img left"
+            className="top-logo-img center"
           />
-          <div className="hero-text-left">
+          <div className="hero-text-center">
             <div className="subtitle">DJ / Productora</div>
-            <div className="genres">TECHNO • DEEP HOUSE • PROGRESSIVE HOUSE <span className="badge">•</span></div>
+            <div className="genres">PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE <span className="badge">•</span></div>
           </div>
         </div>
-        <img
-          src="/image/logo/peloAuriculares.png"
-          alt="Logo Florencia Palacios"
-          className="top-logo-img right"
-        />
       </div>
       <main className="container">
         <section className="hero">
@@ -132,18 +127,30 @@ export default function App() {
 
         <section id="modulos">
           <div className="section-title">ARTISTA</div>
-          <div className="modules" style={{gridTemplateColumns:'1fr'}}>
+          <div className="modules" style={{gridTemplateColumns:'1fr 1fr', gap:'20px'}}>
             <div className="module-card reveal">
               <p>
-                Flor Palacios es una DJ oriunda de Esperanza, Santa Fe, que actualmente
-                reside en Rosario. Con más de 6 años de trayectoria, su carrera la llevó a
-                diferentes escenarios de todo el país.
+                 Flor Palacios es una DJ oriunda de Santa Fe, Argentina.
+                Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽.
+                Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios.
+                Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. 
+                Su objetivo es claro: transmitir emociones y generar conexión en la pista.
+                En su recorrido compartió cabina con DJs nacionales e internacionales como Budakid, Chapa & Castelo, Greta Meier, John Cosani y Kabi, entre otros.
+                Esto le permitió presentarse en ciudades como Buenos Aires, Rosario y Bariloche, y también expandir su música fuera del país, con presentaciones en Tulum (México).
+                Actualmente, Flor está perfeccionándose en producción musical junto a referentes del género, como Ignacio Berardi, Agustín Pietrocola; con el objetivo de lanzar sus próximos tracks.
               </p>
               <p style={{marginTop:10}}>
                 Su sonido se mueve entre el Progressive House, Deep House e Indie Dance,
                 siempre con un enfoque versátil que se adapta al contexto y a la energía del
                 público. Su objetivo es claro: transmitir emociones y generar conexión en la pista.
               </p>
+            </div>
+            <div className="module-card reveal">
+              <img 
+                src="/image/imagenCuerpo/image1.JPEG" 
+                alt="Flor Palacios DJ" 
+                style={{width:'100%', height:'auto', borderRadius:'12px', objectFit:'cover'}}
+              />
             </div>
           </div>
         </section>
