@@ -107,21 +107,25 @@ export default function App() {
         </div>
       </header>
       <div className="top-logo">
+        <div className="top-logo-left">
+          <img
+            src="/image/tipografia/FlorPalacioSuperpuesto blanco.png"
+            alt="Flor Palacios"
+            className="top-logo-img left"
+          />
+          <div className="hero-text-left">
+            <div className="subtitle">DJ / Productora</div>
+            <div className="genres">TECHNO • DEEP HOUSE • PROGRESSIVE HOUSE <span className="badge">•</span></div>
+          </div>
+        </div>
         <img
           src="/image/logo/peloAuriculares.png"
           alt="Logo Florencia Palacios"
-          className="top-logo-img"
+          className="top-logo-img right"
         />
       </div>
       <main className="container">
         <section className="hero">
-          <img
-            src="/image/tipografia/tipografiaRayo.png"
-            alt="Florencia Palacios"
-            className="hero-name-img"
-          />
-          <div className="subtitle">DJ / Productora</div>
-          <div className="genres">TECHNO • DEEP HOUSE • PROGRESSIVE HOUSE <span className="badge">•</span></div>
         </section>
 
         
