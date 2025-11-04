@@ -6,16 +6,17 @@ export default function App() {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+    const canvasEl = canvas
     const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     const ctx = canvas.getContext('2d')!
     let width = 0, height = 0, dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1))
     let raf = 0
 
     function resize() {
-      const { clientWidth, clientHeight } = canvas
+      const { clientWidth, clientHeight } = canvasEl
       width = clientWidth; height = clientHeight
-      canvas.width = Math.floor(width * dpr)
-      canvas.height = Math.floor(height * dpr)
+      canvasEl.width = Math.floor(width * dpr)
+      canvasEl.height = Math.floor(height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     const onResize = () => { resize() }
@@ -105,20 +106,23 @@ export default function App() {
           />
           <div className="subtitle">DJ / Productora</div>
           <div className="genres">TECHNO • DEEP HOUSE • PROGRESSIVE HOUSE <span className="badge">•</span></div>
-        </section>
-
-        <section id="musica">
-          <div className="section-title">MÚSICA</div>
-          <div className="media-embed reveal">
-            <iframe
-              title="SoundCloud Flor Palacios"
-              height="300"
-              scrolling="no"
-              allow="autoplay"
-              src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/florpalaciosdj&color=%23ff2da1&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"
-            ></iframe>
+          <div className="social-actions">
+            <a className="social-btn sc" aria-label="SoundCloud" title="SoundCloud" href="https://soundcloud.com/florpalaciosdj" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 14.5a2.5 2.5 0 0 0 2.5 2.5H20a3 3 0 0 0 0-6 3.5 3.5 0 0 0-1.386.29A6 6 0 0 0 7 11.5v5H5.5A2.5 2.5 0 0 1 3 14.5Z"/></svg>
+            </a>
+            <a className="social-btn ig" aria-label="Instagram" title="Instagram" href="https://www.instagram.com/florpalaciosok?igsh=MXJ0ZjNtdDFuNHlpdQ%3D%3D&utm_source=qr" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm0 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm5.75-2.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z"/></svg>
+            </a>
+            <a className="social-btn yt" aria-label="YouTube" title="YouTube" href="https://youtube.com/@florpalaciosdj?si=sxNxK9raRLNTbXfw" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 12.08s0-3.09-.4-4.45a3 3 0 0 0-2.12-2.13C18.99 5 12 5 12 5s-6.99 0-8.48.5A3 3 0 0 0 1.4 7.63C1 8.99 1 12.08 1 12.08s0 3.09.4 4.45a3 3 0 0 0 2.12 2.13C4.99 19.16 12 19.16 12 19.16s6.99 0 8.48-.5a3 3 0 0 0 2.12-2.13c.4-1.36.4-4.45.4-4.45ZM9.75 15.02v-5.9l5.66 2.95-5.66 2.95Z"/></svg>
+            </a>
+            <a className="social-btn mail" aria-label="Email" title="Email" href="mailto:mariaflorenciapalacios@gmail.com">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 2v.217l9 5.4 9-5.4V7H3Zm18 10V9.383l-8.553 5.132a2 2 0 0 1-1.894 0L2 9.383V17h19Z"/></svg>
+            </a>
           </div>
         </section>
+
+        
 
         <section id="modulos">
           <div className="section-title">ARTISTA</div>
@@ -203,9 +207,13 @@ export default function App() {
                 <div className="stat"><div className="num" id="gigs">120+</div><div className="label">Eventos</div></div>
                 <div className="stat"><div className="num" id="minutes">10k+</div><div className="label">Minutos</div></div>
               </div>
-              <div className="media-embed reveal">
-                <iframe title="SoundCloud" height="180" scrolling="no" allow="autoplay"
-                  src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/209262931&color=%237a5fff&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
+              <div className="media-embed sc-embed reveal">
+                <iframe
+                  title="SoundCloud Flor Palacios"
+                  height="360"
+                  scrolling="no"
+                  allow="autoplay"
+                  src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/florpalaciosdj&visual=true&color=%23ff2da1&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
                 </iframe>
               </div>
             </div>
