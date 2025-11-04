@@ -80,6 +80,8 @@ header {
 .nav .social-actions { display: flex; gap: 12px; margin: 0; }
 .nav .social-btn { width: 50px; height: 50px; }
 .nav .social-btn svg { width: 40px; height: 40px; }
+.nav .social-btn.sc img,
+.nav .social-btn.sc > div { width: 40px; height: 40px; }
 .nav .social-btn.sc svg, .nav .social-btn.yt svg { fill: currentColor; stroke: none; }
 .nav .social-btn.ig svg, .nav .social-btn.mail svg { fill: none; stroke: currentColor; }
 .logo { font-weight: 800; letter-spacing: 1px; }
@@ -110,17 +112,22 @@ header {
 .social-btn:hover { transform: translateY(-2px) scale(1.08); filter: drop-shadow(0 0 14px rgba(255,45,161,.45)); text-decoration: none; }
 .social-btn:focus-visible { outline: 2px solid rgba(255,45,161,.6); outline-offset: 2px; border-radius: 50%; }
 .social-btn svg { width: 30px; height: 30px; display:block; }
+.social-btn.sc img,
+.social-btn.sc > div { width: 30px; height: 30px; }
 .social-btn.sc svg, .social-btn.yt svg { fill: currentColor; stroke: none; }
 .social-btn.ig svg, .social-btn.mail svg { fill: none; stroke: currentColor; }
 
-@keyframes wiggle {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(-8deg) scale(1.06); }
-  50% { transform: rotate(6deg) scale(1.06); }
-  75% { transform: rotate(-4deg) scale(1.06); }
-  100% { transform: rotate(0deg); }
+@keyframes vibrate {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+  25% { transform: translateX(-1px) translateY(-0.5px) rotate(-2deg); }
+  50% { transform: translateX(1px) translateY(0.5px) rotate(2deg); }
+  75% { transform: translateX(-0.5px) translateY(1px) rotate(-1deg); }
 }
-.social-btn:hover svg { animation: wiggle .6s ease-in-out both; }
+.social-btn:hover svg,
+.social-btn:hover img,
+.social-btn:hover > div {
+  animation: vibrate 1.2s ease-in-out infinite;
+}
 .social-btn.sc { border-color: rgba(255,45,161,.35); }
 .social-btn.ig { border-color: rgba(255,110,199,.35); }
 .social-btn.yt { border-color: rgba(155,92,255,.35); }

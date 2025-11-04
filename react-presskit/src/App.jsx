@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import SoundCloudIcon from './SoundCloudIcon'
 
 export default function App() {
   const canvasRef = useRef(null)
@@ -83,9 +84,7 @@ export default function App() {
           <div className="logo">DJ PRESSKIT • Florencia Palacios</div>
           <div className="social-actions">
             <a className="social-btn sc" aria-label="SoundCloud" title="SoundCloud" href="https://soundcloud.com/florpalaciosdj" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M1.175 13.5c-.317 0-.575-.258-.575-.575v-2.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v2.85c0 .317-.258.575-.575.575zm1.425 2.5c-.317 0-.575-.258-.575-.575v-4.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v4.85c0 .317-.258.575-.575.575zm1.425 2.5c-.317 0-.575-.258-.575-.575v-6.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v6.85c0 .317-.258.575-.575.575zm1.425 1.5c-.317 0-.575-.258-.575-.575V8.075c0-.317.258-.575.575-.575.317 0 .575.258.575.575v13.85c0 .317-.258.575-.575.575zm1.425-1.5c-.317 0-.575-.258-.575-.575v-6.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v6.85c0 .317-.258.575-.575.575zm1.425-2.5c-.317 0-.575-.258-.575-.575v-4.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v4.85c0 .317-.258.575-.575.575zm1.425-2.5c-.317 0-.575-.258-.575-.575v-2.85c0-.317.258-.575.575-.575.317 0 .575.258.575.575v2.85c0 .317-.258.575-.575.575zm8.925-1.425c-3.1 0-5.625 2.425-5.85 5.5-.113.15-.188.325-.188.525 0 .55.45 1 1 1h10.075c2.925 0 5.3-2.375 5.3-5.3 0-2.925-2.375-5.3-5.3-5.3-.113 0-.225.013-.338.038.113-.3.188-.625.188-.962 0-1.8-1.45-3.25-3.25-3.25-1.125 0-2.125.575-2.7 1.45-.45-.275-.975-.45-1.55-.45-1.4 0-2.5 1.1-2.5 2.5 0 .325.075.625.2.9-.125-.05-.25-.075-.387-.075-.675 0-1.225.55-1.225 1.225 0 .338.138.637.362.85-.225-.05-.45-.075-.675-.075-1.1 0-2 .9-2 2 0 .5.188.938.488 1.275z"/>
-              </svg>
+              <SoundCloudIcon src="/image/nubeSounCloud/sounCloud.png" />
             </a>
             <a className="social-btn ig" aria-label="Instagram" title="Instagram" href="https://www.instagram.com/florpalaciosok?igsh=MXJ0ZjNtdDFuNHlpdQ%3D%3D&utm_source=qr" target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
