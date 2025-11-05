@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import SoundCloudIcon from './SoundCloudIcon'
+import Flag from 'country-flag-icons/react/3x2'
 
 export default function App() {
   const canvasRef = useRef(null)
@@ -14,16 +15,204 @@ export default function App() {
     '/image/galeria/8.JPEG',
     '/image/galeria/9.JPEG',
     '/image/galeria/10.JPEG',
+    '/image/galeria/11.JPEG',
+    '/image/galeria/12.JPEG',
+    '/image/galeria/13.JPEG',
+    '/image/galeria/15.JPG',
+    '/image/galeria/14.jpeg',
   ]
 
   // Lightbox state for gallery
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  // Menu dropdown state
+  const [menuOpen, setMenuOpen] = useState(false)
+  // Language state
+  const [language, setLanguage] = useState('es') // 'es' or 'en'
+  
+  // Translations
+  const t = {
+    es: {
+      menu: {
+        bio: 'Biografía',
+        upcoming: 'Próximos Eventos',
+        past: 'Eventos Pasados',
+        gallery: 'Galería',
+        video: 'Video Destacado',
+        soundcloud: 'SoundCloud'
+      },
+      sections: {
+        bio: 'Bio',
+        upcoming: 'PRÓXIMOS EVENTOS',
+        past: 'EVENTOS PASADOS',
+        gallery: 'GALERÍA',
+        video: 'VIDEO DESTACADO',
+        soundcloud: 'SOUNDCLOUD'
+      },
+      bio: {
+        p1: 'Flor Palacios es una DJ oriunda de Santa Fe, Argentina. Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽. Con más de 7 años de trayectoria, su carrera la llevó a diferentes escenarios. Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. Su objetivo es claro: transmitir emociones y generar conexión en la pista. Flor Palacios es una DJ oriunda de Santa Fe, Argentina. Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽. Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios. Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. Su objetivo es claro: transmitir emociones y generar conexión en la pista.',
+        p2: 'En su recorrido compartió cabina con DJs nacionales e internacionales como Budakid, Chapa & Castelo, Greta Meier, John Cosani y Kabi, entre otros. Esto le permitió presentarse en ciudades como Buenos Aires, Rosario y Bariloche, y también expandir su música fuera del país, con presentaciones en Tulum (México).',
+        p3: 'Actualmente, Flor está perfeccionándose en producción musical junto a referentes del género, como Ignacio Berardi, Agustín Pietrocola; con el objetivo de lanzar sus próximos tracks.'
+      },
+      gallery: {
+        alt: 'Galería'
+      },
+      video: {
+        title: 'YouTube destacado'
+      },
+      stats: {
+        subtitle: 'DJ / Productora',
+        years: 'Años',
+        events: 'Eventos',
+        minutes: 'Minutos'
+      },
+      footer: {
+        copyright: 'DJ PRESSKIT ® — Florencia Palacios — All Rights Reserved',
+        powered: 'Powered by tu hosting'
+      }
+    },
+    en: {
+      menu: {
+        bio: 'Biography',
+        upcoming: 'Upcoming Events',
+        past: 'Past Events',
+        gallery: 'Gallery',
+        video: 'Featured Video',
+        soundcloud: 'SoundCloud'
+      },
+      sections: {
+        bio: 'Bio',
+        upcoming: 'UPCOMING EVENTS',
+        past: 'PAST EVENTS',
+        gallery: 'GALLERY',
+        video: 'FEATURED VIDEO',
+        soundcloud: 'SOUNDCLOUD'
+      },
+      bio: {
+        p1: 'Flor Palacios is a DJ from Santa Fe, Argentina. Currently in constant movement based in Rosario 🇦🇷 and Tulum🇲🇽. With over 6 years of career, her journey has taken her to different stages. Her sound moves between Progressive House, Deep House and Indie Dance, always with a versatile approach that adapts to the context and the energy of the audience. Her goal is clear: to transmit emotions and create connection on the dance floor. Flor Palacios is a DJ from Santa Fe, Argentina. Currently in constant movement based in Rosario 🇦🇷 and Tulum🇲🇽. With over 6 years of career, her journey has taken her to different stages. Her sound moves between Progressive House, Deep House and Indie Dance, always with a versatile approach that adapts to the context and the energy of the audience. Her goal is clear: to transmit emotions and create connection on the dance floor.',
+        p2: 'Throughout her journey, she has shared the booth with national and international DJs such as Budakid, Chapa & Castelo, Greta Meier, John Cosani and Kabi, among others. This has allowed her to perform in cities like Buenos Aires, Rosario and Bariloche, and also expand her music outside the country, with performances in Tulum (Mexico).',
+        p3: 'Currently, Flor is perfecting herself in music production alongside genre references such as Ignacio Berardi, Agustín Pietrocola; with the goal of releasing her upcoming tracks.'
+      },
+      gallery: {
+        alt: 'Gallery'
+      },
+      video: {
+        title: 'Featured YouTube'
+      },
+      stats: {
+        subtitle: 'DJ / Producer',
+        years: 'Years',
+        events: 'Events',
+        minutes: 'Minutes'
+      },
+      footer: {
+        copyright: 'DJ PRESSKIT ® — Florencia Palacios — All Rights Reserved',
+        powered: 'Powered by tu hosting'
+      }
+    }
+  }
+
+  // SoundCloud covers state (loaded from /soundcloud-covers.json)
+  const [scImages, setScImages] = useState([])
+  // SoundCloud tracks state (loaded from /soundcloud-tracks.json)
+  const [scTracks, setScTracks] = useState([])
+  const [scThumbs, setScThumbs] = useState([])
+  useEffect(() => {
+    let mounted = true
+    const base = (typeof importMeta !== 'undefined' && importMeta.env && importMeta.env.BASE_URL) || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/'
+    const makeUrl = (name) => {
+      try {
+        const u = new URL(base, window.location.origin)
+        return new URL(name + `?t=${Date.now()}`, u).toString()
+      } catch { return `/${name}?t=${Date.now()}` }
+    }
+
+    const fetchJsonCandidates = async (names) => {
+      for (const name of names) {
+        const url = makeUrl(name)
+        try {
+          console.log('Trying JSON:', url)
+          const r = await fetch(url, { cache: 'no-store' })
+          if (!r.ok) continue
+          const txt = await r.text()
+          try { return JSON.parse(txt) } catch { /* try next */ }
+        } catch { /* try next */ }
+      }
+      return null
+    }
+
+    ;(async () => {
+      const covers = await fetchJsonCandidates(['soundcloud-covers.json', 'sc-covers.json'])
+      if (mounted && Array.isArray(covers)) setScImages(covers)
+
+      let tracks = await fetchJsonCandidates(['soundcloud-tracks.json', 'sc-tracks.json', 'sc-tracks.json.json'])
+      if (!Array.isArray(tracks)) {
+        try {
+          const mod = await import('./sc-tracks.json')
+          tracks = mod.default || mod
+          console.log('Loaded SoundCloud tracks from src fallback:', tracks.length)
+        } catch (e) {
+          console.warn('Fallback import ./sc-tracks.json failed', e)
+        }
+      }
+      if (mounted) {
+        if (Array.isArray(tracks)) {
+          console.log('Loaded SoundCloud tracks:', tracks.length)
+          setScTracks(tracks)
+        } else {
+          console.warn('No tracks JSON found (tried: soundcloud-tracks.json, sc-tracks.json, sc-tracks.json.json)')
+        }
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
+
+  // Derivar miniaturas de SoundCloud usando oEmbed
+  useEffect(() => {
+    if (!Array.isArray(scTracks) || scTracks.length === 0) { setScThumbs([]); return }
+    let cancelled = false
+    const controller = new AbortController()
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms))
+    ;(async () => {
+      try {
+        const urls = Array.from(new Set(scTracks))
+        const collected = []
+        const BATCH = 6
+        for (let i = 0; i < urls.length; i += BATCH) {
+          const chunk = urls.slice(i, i + BATCH)
+          const res = await Promise.allSettled(chunk.map(async (url) => {
+            const o = await fetch(`https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(url)}`, { signal: controller.signal })
+            if (!o.ok) throw new Error('oembed ' + o.status)
+            const data = await o.json()
+            let thumb = data.thumbnail_url || ''
+            thumb = thumb.replace('-t200x200.', '-t500x500.').replace('-large.', '-t500x500.')
+            return { url, thumb }
+          }))
+          res.forEach(r => { if (r.status === 'fulfilled' && r.value && r.value.thumb) collected.push(r.value) })
+          if (cancelled) return
+          setScThumbs(prev => prev.length === 0 ? collected.slice() : prev)
+          await sleep(200)
+        }
+        if (!cancelled) setScThumbs(collected)
+      } catch (e) {
+        if (!cancelled) setScThumbs([])
+      }
+    })()
+    return () => { cancelled = true; controller.abort() }
+  }, [scTracks])
 
   const openLightbox = (idx) => { setLightboxIndex(idx); setLightboxOpen(true) }
   const closeLightbox = () => setLightboxOpen(false)
   const nextLightbox = () => setLightboxIndex((i) => (i + 1) % galleryImages.length)
   const prevLightbox = () => setLightboxIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length)
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuOpen && !e.target.closest('header')) setMenuOpen(false)
+    }
+    if (menuOpen) document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [menuOpen])
 
   useEffect(() => {
     if (!lightboxOpen) return
@@ -39,6 +228,7 @@ export default function App() {
   function Carousel({ images, intervalMs = 5000 }) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const rootRef = useRef(null)
     const timerRef = useRef(0)
     const touchRef = useRef({ xStart: 0, xMove: 0, dragging: false })
@@ -52,10 +242,10 @@ export default function App() {
     const prev = () => goTo(currentIndex - 1)
 
     useEffect(() => {
-      if (isPaused || images.length <= 1) return
+      if (prefersReducedMotion || isPaused || images.length <= 1) return
       timerRef.current = window.setTimeout(next, intervalMs)
       return () => { if (timerRef.current) window.clearTimeout(timerRef.current) }
-    }, [currentIndex, isPaused, intervalMs, images.length])
+    }, [currentIndex, isPaused, intervalMs, images.length, prefersReducedMotion])
 
     useEffect(() => {
       const el = rootRef.current
@@ -107,7 +297,7 @@ export default function App() {
         <div
           className="track"
           style={{
-            display:'flex', transition:'transform 600ms ease',
+            display:'flex', transition: prefersReducedMotion ? 'none' : 'transform 600ms ease',
             transform:`translateX(-${currentIndex * 100}%)`,
             width:`${images.length * 100}%`,
           }}
@@ -210,6 +400,134 @@ export default function App() {
     )
   }
 
+  // Carousel para imágenes con links
+  function ImageCarouselWithLinks({ items, intervalMs = 5000 }) {
+    const visibleCards = 3
+    const images = items.map(i => i.thumb)
+    const extendedItems = items.length > 0 ? [...items, ...items.slice(0, visibleCards)] : []
+    const [currentIndex, setCurrentIndex] = useState(0)
+    const [isPaused, setIsPaused] = useState(false)
+    const [noAnim, setNoAnim] = useState(false)
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const rootRef = useRef(null)
+    const timerRef = useRef(0)
+    const goTo = (idx) => { const n = images.length || 1; setCurrentIndex(((idx % n) + n) % n) }
+    const next = () => goTo(currentIndex + 1)
+    const prev = () => goTo(currentIndex - 1)
+    useEffect(() => { if (prefersReducedMotion || isPaused || images.length <= 1) return; timerRef.current = window.setTimeout(next, intervalMs); return () => { if (timerRef.current) window.clearTimeout(timerRef.current) } }, [currentIndex, isPaused, intervalMs, images.length, prefersReducedMotion])
+    useEffect(() => { const el = rootRef.current; if (!el) return; const io = new IntersectionObserver((e)=>e.forEach(x=>setIsPaused(!x.isIntersecting)), {threshold:0.2}); io.observe(el); return () => io.disconnect() }, [])
+    // snap back when reaching the cloned tail to create infinite loop (forward)
+    useEffect(() => {
+      if (images.length === 0) return
+      if (currentIndex === images.length) {
+        const t = setTimeout(() => {
+          setNoAnim(true)
+          setCurrentIndex(0)
+          requestAnimationFrame(() => setNoAnim(false))
+        }, 610)
+        return () => clearTimeout(t)
+      }
+    }, [currentIndex, images.length])
+    const CARD = 400
+    const GAP = 48
+    return (
+      <div ref={rootRef} style={{position:'relative', overflow:'hidden', width:'100vw', maxWidth:'100vw', marginLeft:'calc(50% - 50vw)', perspective:1200}}>
+        <div style={{display:'flex', gap:`${GAP}px`, width:(extendedItems.length) * (CARD + GAP), transform:`translateX(-${currentIndex * (CARD + GAP)}px)`, transition: (noAnim || prefersReducedMotion) ? 'none' : 'transform 600ms ease', padding:`0 ${GAP}px`}}>
+          {extendedItems.map((item, i) => {
+            const offset = i - currentIndex
+            const clamped = Math.max(-2, Math.min(2, offset))
+            const isCenter = clamped === 0
+            const rotate = isCenter ? 0 : clamped * 18 // grados
+            const translateZ = isCenter ? 20 : -Math.abs(clamped) * 60
+            const scale = isCenter ? 1.08 : 1 - Math.abs(clamped) * 0.12
+            const opacity = isCenter ? 1 : 1 - Math.abs(clamped) * 0.2
+            const zIndex = isCenter ? 3 : 1
+            return (
+              <div key={i} style={{flex:'0 0 auto', width:CARD, position:'relative', cursor:'pointer', transform:`translateZ(0)`, willChange:'transform, opacity', zIndex, contain:'layout style paint'}} onClick={() => window.open(item.url, '_blank', 'noopener') }>
+                <div style={{position:'relative', width:'100%', height:CARD, background:'#000', overflow:'hidden', borderRadius:22, boxShadow: isCenter ? '0 18px 50px rgba(255,45,161,.25), 0 12px 40px rgba(0,0,0,.42)' : '0 14px 44px rgba(0,0,0,.38)', transform: prefersReducedMotion ? 'none' : `translateZ(${translateZ}px) rotateY(${rotate}deg) scale(${scale})`, transformStyle:'preserve-3d', transformOrigin: offset < 0 ? 'right center' : offset > 0 ? 'left center' : 'center', transition: prefersReducedMotion ? 'none' : 'transform 450ms ease, opacity 450ms ease, box-shadow 450ms ease', opacity, contain:'layout style paint'}}>
+                  <img src={item.thumb} alt={`SC ${i+1}`} loading="lazy" style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center'}} />
+                  <div style={{position:'absolute', inset:0, boxShadow:'inset 0 0 0 2px rgba(155,92,255,.25)', borderRadius:22, pointerEvents:'none'}} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        {images.length > 3 && (
+          <>
+            <button aria-label="Anterior" onClick={(e)=>{e.stopPropagation(); prev()}} style={{position:'absolute', top:'50%', left:6, transform:'translateY(-50%)', background:'rgba(0,0,0,.45)', color:'#fff', border:'none', width:32, height:32, borderRadius:16, cursor:'pointer'}}>‹</button>
+            <button aria-label="Siguiente" onClick={(e)=>{e.stopPropagation(); next()}} style={{position:'absolute', top:'50%', right:6, transform:'translateY(-50%)', background:'rgba(0,0,0,.45)', color:'#fff', border:'none', width:32, height:32, borderRadius:16, cursor:'pointer'}}>›</button>
+          </>
+        )}
+      </div>
+    )
+  }
+
+  // Carousel for SoundCloud iframes
+  function SoundCloudCarousel({ tracks, intervalMs = 6000 }) {
+    const [currentIndex, setCurrentIndex] = useState(0)
+    const [isPaused, setIsPaused] = useState(false)
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const rootRef = useRef(null)
+    const timerRef = useRef(0)
+
+    const goTo = (idx) => {
+      const n = tracks.length
+      const next = ((idx % n) + n) % n
+      setCurrentIndex(next)
+    }
+    const next = () => goTo(currentIndex + 1)
+    const prev = () => goTo(currentIndex - 1)
+
+    useEffect(() => {
+      if (prefersReducedMotion || isPaused || tracks.length <= 1) return
+      timerRef.current = window.setTimeout(next, intervalMs)
+      return () => { if (timerRef.current) window.clearTimeout(timerRef.current) }
+    }, [currentIndex, isPaused, intervalMs, tracks.length, prefersReducedMotion])
+
+    useEffect(() => {
+      const el = rootRef.current
+      if (!el) return
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => setIsPaused(!e.isIntersecting))
+      }, { threshold: 0.2 })
+      io.observe(el)
+      return () => io.disconnect()
+    }, [])
+
+    return (
+      <div ref={rootRef} className="sc-carousel" style={{position:'relative', overflow:'hidden', borderRadius:16, maxWidth:800, margin:'0 auto'}}>
+        <div style={{display:'flex', width:`${tracks.length * 100}%`, transform:`translateX(-${currentIndex * 100}%)`, transition: prefersReducedMotion ? 'none' : 'transform 600ms ease'}}>
+          {tracks.map((trackUrl, i) => {
+            const embedSrc = `https://w.soundcloud.com/player/?url=${encodeURIComponent(trackUrl)}&visual=false&color=%23ff2da1&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`
+            return (
+              <div key={i} style={{flex:'0 0 100%', minWidth:'100%'}}>
+                <div style={{position:'relative', width:'100%', height:166, background:'#000'}}>
+                  {Math.abs(currentIndex - i) <= 1 ? (
+                    <iframe
+                      title={`SC ${i+1}`}
+                      src={embedSrc}
+                      allow="autoplay; encrypted-media; clipboard-write"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      style={{position:'absolute', top:0, left:0, right:0, bottom:0, width:'100%', height:'100%', border:0}}
+                    />
+                  ) : (
+                    <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'#000'}} />
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        {tracks.length > 1 && (
+          <>
+            <button aria-label="Anterior" onClick={prev} style={{position:'absolute', top:'50%', left:8, transform:'translateY(-50%)', background:'rgba(0,0,0,.4)', color:'#fff', border:'none', width:36, height:36, borderRadius:18, cursor:'pointer'}}>‹</button>
+            <button aria-label="Siguiente" onClick={next} style={{position:'absolute', top:'50%', right:8, transform:'translateY(-50%)', background:'rgba(0,0,0,.4)', color:'#fff', border:'none', width:36, height:36, borderRadius:18, cursor:'pointer'}}>›</button>
+          </>
+        )}
+      </div>
+    )
+  }
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -298,10 +616,23 @@ export default function App() {
     // Inicializar smooth scroll siempre (ignorar prefers-reduced-motion para esta funcionalidad)
     console.log('Smooth scroll initialized')
     
+    // Función throttle para limitar la frecuencia de ejecución
+    const throttle = (func, limit) => {
+      let inThrottle
+      return function(...args) {
+        if (!inThrottle) {
+          func.apply(this, args)
+          inThrottle = true
+          setTimeout(() => inThrottle = false, limit)
+        }
+      }
+    }
+    
     let scrollPosition = window.scrollY || window.pageYOffset
     let targetPosition = scrollPosition
     let isScrolling = false
     let rafId = null
+    let accumulatedDelta = 0
 
     const smoothScroll = () => {
       const distance = targetPosition - scrollPosition
@@ -325,15 +656,24 @@ export default function App() {
     }
 
     const handleWheel = (e) => {
+      // Permitir zoom con Ctrl/Cmd + scroll
+      if (e.ctrlKey || e.metaKey) {
+        return // Dejar que el navegador maneje el zoom normalmente
+      }
+      
       e.preventDefault()
       e.stopPropagation()
       
-      const delta = e.deltaY
+      // Acumular deltas para suavizar el scroll en monitores de alta tasa de refresco
+      accumulatedDelta += e.deltaY
       
-      // Actualizar posición objetivo directamente
-      targetPosition += delta
+      // Actualizar posición objetivo con el delta acumulado
+      targetPosition += accumulatedDelta
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight
       targetPosition = Math.max(0, Math.min(targetPosition, maxScroll))
+      
+      // Resetear acumulador después de aplicar
+      accumulatedDelta = 0
       
       // Si no está animando, iniciar
       if (!isScrolling) {
@@ -342,6 +682,9 @@ export default function App() {
         rafId = requestAnimationFrame(smoothScroll)
       }
     }
+    
+    // Throttle del evento wheel a ~60fps (16ms) para mejor rendimiento
+    const throttledWheel = throttle(handleWheel, 16)
 
     const handleTouchStart = (e) => {
       scrollPosition = window.scrollY || window.pageYOffset
@@ -373,14 +716,14 @@ export default function App() {
       window.lastTouchY = null
     }
 
-    // Agregar listeners
-    window.addEventListener('wheel', handleWheel, { passive: false })
+    // Agregar listeners con throttle para mejor rendimiento
+    window.addEventListener('wheel', throttledWheel, { passive: false })
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
     window.addEventListener('touchmove', handleTouchMove, { passive: false })
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
     return () => {
-      window.removeEventListener('wheel', handleWheel)
+      window.removeEventListener('wheel', throttledWheel)
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('touchmove', handleTouchMove)
       window.removeEventListener('touchend', handleTouchEnd)
@@ -474,6 +817,94 @@ export default function App() {
                 <path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/>
               </svg>
             </a>
+            <div style={{position:'relative'}}>
+              <button
+                aria-label="Menú"
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="social-btn"
+                style={{
+                  border:'none', background:'transparent',
+                  width:50, height:50, cursor:'pointer', color:'var(--brand)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  transition:'all .2s ease'
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={menuOpen ? "M6 18L18 6M6 6l12 12" : "M3 12h18M3 6h18M3 18h18"} />
+                </svg>
+              </button>
+              {menuOpen && (
+                <nav
+                  style={{
+                    position:'absolute', top:'calc(100% + 8px)', right:0,
+                    background:'rgba(5,5,7,0.95)', backdropFilter:'blur(12px)',
+                    border:'1px solid var(--surface)', borderRadius:12,
+                    minWidth:220, padding:'8px 0', zIndex:100,
+                    boxShadow:'0 8px 32px rgba(0,0,0,.4)'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {[
+                    { label:t[language].menu.bio, href:'#modulos' },
+                    { label:t[language].menu.upcoming, href:'#eventos' },
+                    { label:t[language].menu.past, href:'#past-events' },
+                    { label:t[language].menu.gallery, href:'#galeria' },
+                    { label:t[language].menu.video, href:'#youtube' },
+                    { label:t[language].menu.soundcloud, href:'#sc-tracks' },
+                  ].map((item) => (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => {
+                        setMenuOpen(false)
+                        const el = document.querySelector(item.href)
+                        if (el) {
+                          setTimeout(() => el.scrollIntoView({ behavior:'smooth', block:'start' }), 100)
+                        }
+                      }}
+                      style={{
+                        display:'block', padding:'10px 16px', color:'var(--text)',
+                        textDecoration:'none', fontSize:14, transition:'all .15s ease'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background='rgba(255,45,161,.1)'; e.currentTarget.style.color='#ffd3ec' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='var(--text)' }}
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </nav>
+              )}
+            </div>
+            <div style={{display:'flex', gap:8, alignItems:'center'}}>
+              <button
+                onClick={() => setLanguage('es')}
+                className="social-btn"
+                style={{
+                  border:'none', background:'transparent',
+                  width:50, height:50, cursor:'pointer', padding:0,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  opacity: language === 'es' ? 1 : 0.5,
+                  transition:'all .2s ease'
+                }}
+                title="Español"
+              >
+                <Flag.AR style={{width:28, height:20, borderRadius:2}} />
+              </button>
+              <button
+                onClick={() => setLanguage('en')}
+                className="social-btn"
+                style={{
+                  border:'none', background:'transparent',
+                  width:50, height:50, cursor:'pointer', padding:0,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  opacity: language === 'en' ? 1 : 0.5,
+                  transition:'all .2s ease'
+                }}
+                title="English"
+              >
+                <Flag.US style={{width:28, height:20, borderRadius:2}} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -485,21 +916,21 @@ export default function App() {
             className="top-logo-img center"
           />
           <div className="hero-text-center">
-            <div className="subtitle">DJ / Productora</div>
+            <div className="subtitle">{t[language].stats.subtitle}</div>
             <div className="genres">PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE <span className="badge">•</span></div>
           </div>
           <div className="stats reveal" style={{marginTop:16}}>
             <div className="stat">
-              <div className="num" data-target="6" data-suffix="+">0</div>
-              <div className="label">Años</div>
+              <div className="num" data-target="7" data-suffix="+">0</div>
+              <div className="label">{t[language].stats.years}</div>
             </div>
             <div className="stat">
-              <div className="num" data-target="120" data-suffix="+">0</div>
-              <div className="label">Eventos</div>
+              <div className="num" data-target="80" data-suffix="+">0</div>
+              <div className="label">{t[language].stats.events}</div>
             </div>
             <div className="stat">
               <div className="num" data-target="10000" data-format="kPlus">0</div>
-              <div className="label">Minutos</div>
+              <div className="label">{t[language].stats.minutes}</div>
             </div>
           </div>
         </div>
@@ -513,30 +944,17 @@ export default function App() {
         
 
         <section id="modulos">
-          <div className="section-title">Biografia</div>
+          <div className="section-title">{t[language].sections.bio}</div>
           <div className="modules" style={{gridTemplateColumns:'1fr 1fr', gap:'20px'}}>
             <div className="module-card reveal">
               <p>
-                Flor Palacios es una DJ oriunda de Santa Fe, Argentina.
-                Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽.
-                Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios.
-                Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. 
-                Su objetivo es claro: transmitir emociones y generar conexión en la pista.
-                Flor Palacios es una DJ oriunda de Santa Fe, Argentina.
-                Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽.
-                Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios.
-                Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. 
-                Su objetivo es claro: transmitir emociones y generar conexión en la pista.
-                
+                {t[language].bio.p1}
               </p>
               <p style={{marginTop:10}}>  
-                En su recorrido compartió cabina con DJs nacionales e internacionales como Budakid, Chapa & Castelo, Greta Meier, John Cosani y Kabi, entre otros.
-                Esto le permitió presentarse en ciudades como Buenos Aires, Rosario y Bariloche, y también expandir su música fuera del país, con presentaciones en Tulum (México).
+                {t[language].bio.p2}
               </p>
               <p style={{marginTop:10}}>
-                Actualmente, Flor está perfeccionándose en producción musical junto a referentes del género,
-                como Ignacio Berardi, Agustín Pietrocola; con el objetivo de lanzar sus próximos tracks.
-                
+                {t[language].bio.p3}
               </p>
             </div>
             <div className="module-card reveal sticky-image" style={{position:'sticky', top:'var(--header-h, 70px)', alignSelf:'start'}}>
@@ -549,63 +967,71 @@ export default function App() {
           </div>
         </section>
 
-        {/* Galería full-bleed debajo de ARTISTA */}
-        <section id="galeria" className="reveal" style={{width:'100vw', marginLeft:'calc(50% - 50vw)'}}>
-          <div className="container" style={{padding:'0 16px'}}>
-            <div className="section-title">GALERÍA</div>
-          </div>
-          <div className="masonry" style={{marginTop:12, padding:'0 16px'}}>
-            {galleryImages.map((src, i) => (
-              <div key={i} className="masonry-item" onClick={() => openLightbox(i)} style={{cursor:'zoom-in'}}>
-                <img src={src} alt={`Galería ${i+1}`} loading="lazy" />
-              </div>
-            ))}
-          </div>
-        </section>
+        
+
+        
 
         <section id="eventos">
-          <div className="section-title">UPCOMING EVENTS</div>
+          <div className="section-title">{t[language].sections.upcoming}</div>
           <div className="card events reveal">
             <div className="row">
               <div>
-                <h4>ALTERNATE STATES</h4>
-                <div className="muted">06/12/2025 • Rosario, AR</div>
+                <h4>Cosme Beats</h4>
+                <div className="muted">14/11/2025 • Rosario, AR 🇦🇷</div>
               </div>
-              <a className="btn" href="#" target="_blank" rel="noopener">Tickets</a>
             </div>
             <div className="row">
               <div>
-                <h4>GROOVE NIGHT</h4>
-                <div className="muted">13/12/2025 • Santa Fe, AR</div>
+                <h4>MAD</h4>
+                <div className="muted">28/11/2025 • Miami, US 🇺🇸</div>
               </div>
-              <a className="btn" href="#" target="_blank" rel="noopener">Tickets</a>
             </div>
             <div className="row">
               <div>
-                <h4>PALOOZA RECORDS SHOWCASE</h4>
-                <div className="muted">20/12/2025 • Córdoba, AR</div>
+                <h4>Xnake Rooftop</h4>
+                <div className="muted">05/12/2025 • Tulum, MX 🇲🇽</div>
               </div>
-              <a className="btn" href="#" target="_blank" rel="noopener">Tickets</a>
-            </div>
-            <div style={{marginTop:16, textAlign:'center'}}>
-              <a className="btn ghost" href="#">Más fechas</a>
             </div>
           </div>
         </section>
 
-        <section>
-          <div className="section-title">PAST EVENTS</div>
+        <section id="past-events">
+          <div className="section-title">{t[language].sections.past}</div>
           <div className="grid cards reveal">
-            <div className="card"><h4>Spektral Groove</h4><div className="muted">30/08/2025 • Buenos Aires, AR</div></div>
-            <div className="card"><h4>Paname SF</h4><div className="muted">23/08/2025 • San Francisco, US</div></div>
-            <div className="card"><h4>Lunáticos</h4><div className="muted">16/08/2025 • Mendoza, AR</div></div>
-            <div className="card"><h4>Do Not Sit</h4><div className="muted">13/08/2025 • Miami, US</div></div>
+            <div className="card"><h4>Recreo</h4><div className="muted">11/05/2025 • Rosario, AR</div></div>
+            <div className="card"><h4>W Kabi</h4><div className="muted">17/05/2025 • Rafaela, AR</div></div>
+            <div className="card"><h4>Lucky</h4><div className="muted">06/06/2025 • Rosario, AR</div></div>
+            <div className="card"><h4>Xnake Rooftop</h4><div className="muted">20/07/2025 • Tulum, MX</div></div>
+            <div className="card"><h4>Alto Fuego Beer House</h4><div className="muted">25/07/2025 • Tulum, MX</div></div>
+            <div className="card"><h4>Santino</h4><div className="muted">02/08/2025 • Tulum, MX</div></div>
+            <div className="card"><h4>Casa Cultura</h4><div className="muted">04/08/2025 • Tulum, MX</div></div>
+            <div className="card"><h4>Bells in the City — Mía</h4><div className="muted">23/08/2025 • Tulum, MX</div></div>
+            <div className="card"><h4>Timeless</h4><div className="muted">06/09/2025 • Rosario, AR</div></div>
+            <div className="card"><h4>Patagonia Cerveza</h4><div className="muted">21/09/2025 • Bariloche, AR</div></div>
+          </div>
+        </section>
+
+        {/* Galería full-bleed después de PAST EVENTS */}
+        <section id="galeria" className="reveal" style={{width:'100vw', marginLeft:'calc(50% - 50vw)'}}>
+          <div className="container" style={{padding:'0 16px'}}>
+            <div className="section-title">{t[language].sections.gallery}</div>
+          </div>
+          <div className="masonry" style={{marginTop:12, padding:'0 16px'}}>
+            {galleryImages.map((src, i) => {
+              const stickyClass = (src.includes('/14'))
+                ? 'stick full-stick big-14'
+                : ((i % 5 === 1 || i % 7 === 3) ? 'stick ' + ((i % 2 === 0) ? 'offset-1' : 'offset-2') : '')
+              return (
+              <div key={i} className={`masonry-item ${stickyClass}`} onClick={() => openLightbox(i)} style={{cursor:'zoom-in'}}>
+                <img src={src} alt={`${t[language].gallery.alt} ${i+1}`} loading="lazy" />
+              </div>
+            )})}
           </div>
         </section>
 
         {/* YouTube destacado */}
         <section id="youtube">
-          <div className="section-title">VIDEO DESTACADO</div>
+          <div className="section-title">{t[language].sections.video}</div>
           <div className="reveal">
             <div
               className="card"
@@ -613,7 +1039,7 @@ export default function App() {
             >
               <div style={{ position:'relative', width:'100%', aspectRatio:'16 / 9', background:'#000' }}>
                 <iframe
-                  title="YouTube destacado"
+                  title={t[language].video.title}
                   src="https://www.youtube.com/embed/5peAQH-GzKs"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -624,57 +1050,30 @@ export default function App() {
           </div>
         </section>
 
-
-
-        <section id="lanzamientos">
-          <div className="section-title">TOP RELEASES</div>
-          <div className="grid cards reveal">
-            <div className="card"><h4>Specialised (Remix)</h4><div className="muted">Mango Alley</div></div>
-            <div className="card"><h4>Hypnotize (Original Mix)</h4><div className="muted">Univack</div></div>
-            <div className="card"><h4>Mysterious Drag</h4><div className="muted">Plattenbank</div></div>
-            <div className="card"><h4>Endurance</h4><div className="muted">Protagonist</div></div>
-          </div>
-        </section>
-
-        <section id="rider">
-          <div className="section-title">TECHNICAL RIDER</div>
-          <div className="rider-list reveal">
-            <div className="rider-item">
-              <h4>Players</h4>
-              <div className="muted">2–4 × Pioneer CDJ‑3000 (linkeados, último firmware)</div>
+        {/* SoundCloud debajo de YouTube */}
+        {Array.isArray(scTracks) && scTracks.length > 0 ? (
+          <section id="sc-tracks">
+            <div className="section-title">{t[language].sections.soundcloud}</div>
+            <div style={{marginTop:12}}>
+              {Array.isArray(scThumbs) && scThumbs.length > 0
+                ? <ImageCarouselWithLinks items={scThumbs} intervalMs={5000} />
+                : <SoundCloudCarousel tracks={scTracks} intervalMs={6000} />}
             </div>
-            <div className="rider-item">
-              <h4>Mixer</h4>
-              <div className="muted">Pioneer DJM‑V10 o DJM‑900NXS2 (firmware actualizado)</div>
-            </div>
-            <div className="rider-item">
-              <h4>Remix Station</h4>
-              <div className="muted">Pioneer RMX‑1000 (enviar/retorno conectado)</div>
-            </div>
-            <div className="rider-item">
-              <h4>Monitoreo</h4>
-              <div className="muted">2 monitores de cabina de alta presión, sin distorsión</div>
-            </div>
-          </div>
-        </section>
-
-        <section id="contacto">
-          <div className="section-title">CONTACTO</div>
-          <div className="card reveal" style={{textAlign:'center'}}>
-            <div style={{fontSize:22, fontWeight:800}}>Booking</div>
-            <div className="muted" style={{margin:'6px 0 10px'}}>Esperanza, Santa Fe, Argentina</div>
-            <div style={{display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap'}}>
-              <a className="btn" href="mailto:booking.florenciapalacios@example.com">booking.florenciapalacios@example.com</a>
-              <a className="btn ghost" href="https://instagram.com/" target="_blank" rel="noopener">Instagram</a>
-              <a className="btn ghost" href="https://soundcloud.com/" target="_blank" rel="noopener">SoundCloud</a>
-            </div>
-          </div>
-        </section>
-
+          </section>
+        ) : (
+          Array.isArray(scImages) && scImages.length > 0 && (
+            <section id="sc-covers">
+              <div className="section-title">{t[language].sections.soundcloud}</div>
+              <div style={{marginTop:12}}>
+                <Carousel images={scImages} intervalMs={4000} />
+              </div>
+            </section>
+          )
+        )}
         <footer>
           <div className="container" style={{textAlign:'center'}}>
-            © {new Date().getFullYear()} DJ PRESSKIT ® — Florencia Palacios — All Rights Reserved
-            <div className="muted" style={{marginTop:6}}>Powered by tu hosting</div>
+            © {new Date().getFullYear()} {t[language].footer.copyright}
+            <div className="muted" style={{marginTop:6}}>{t[language].footer.powered}</div>
           </div>
         </footer>
       </main>
