@@ -1,8 +1,214 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SoundCloudIcon from './SoundCloudIcon'
 
 export default function App() {
   const canvasRef = useRef(null)
+  const galleryImages = [
+    '/image/galeria/1.JPEG',
+    '/image/galeria/2.JPEG',
+    '/image/galeria/3.JPG',
+    '/image/galeria/4.JPEG',
+    '/image/galeria/5.JPEG',
+    '/image/galeria/6.JPEG',
+    '/image/galeria/7.JPEG',
+    '/image/galeria/8.JPEG',
+    '/image/galeria/9.JPEG',
+    '/image/galeria/10.JPEG',
+  ]
+
+  // Lightbox state for gallery
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+
+  const openLightbox = (idx) => { setLightboxIndex(idx); setLightboxOpen(true) }
+  const closeLightbox = () => setLightboxOpen(false)
+  const nextLightbox = () => setLightboxIndex((i) => (i + 1) % galleryImages.length)
+  const prevLightbox = () => setLightboxIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length)
+
+  useEffect(() => {
+    if (!lightboxOpen) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeLightbox()
+      else if (e.key === 'ArrowRight') nextLightbox()
+      else if (e.key === 'ArrowLeft') prevLightbox()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightboxOpen])
+
+  function Carousel({ images, intervalMs = 5000 }) {
+    const [currentIndex, setCurrentIndex] = useState(0)
+    const [isPaused, setIsPaused] = useState(false)
+    const rootRef = useRef(null)
+    const timerRef = useRef(0)
+    const touchRef = useRef({ xStart: 0, xMove: 0, dragging: false })
+
+    const goTo = (idx) => {
+      const n = images.length
+      const next = ((idx % n) + n) % n
+      setCurrentIndex(next)
+    }
+    const next = () => goTo(currentIndex + 1)
+    const prev = () => goTo(currentIndex - 1)
+
+    useEffect(() => {
+      if (isPaused || images.length <= 1) return
+      timerRef.current = window.setTimeout(next, intervalMs)
+      return () => { if (timerRef.current) window.clearTimeout(timerRef.current) }
+    }, [currentIndex, isPaused, intervalMs, images.length])
+
+    useEffect(() => {
+      const el = rootRef.current
+      if (!el) return
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          setIsPaused(!e.isIntersecting)
+        })
+      }, { threshold: 0.2 })
+      io.observe(el)
+      return () => io.disconnect()
+    }, [])
+
+    const onPointerEnter = () => setIsPaused(true)
+    const onPointerLeave = () => setIsPaused(false)
+
+    const onTouchStart = (e) => {
+      const t = e.touches[0]
+      touchRef.current = { xStart: t.clientX, xMove: t.clientX, dragging: true }
+    }
+    const onTouchMove = (e) => {
+      if (!touchRef.current.dragging) return
+      touchRef.current.xMove = e.touches[0].clientX
+    }
+    const onTouchEnd = () => {
+      const { xStart, xMove, dragging } = touchRef.current
+      if (!dragging) return
+      const delta = xMove - xStart
+      touchRef.current.dragging = false
+      if (Math.abs(delta) > 40) {
+        if (delta < 0) next(); else prev()
+      }
+    }
+
+    return (
+      <div
+        ref={rootRef}
+        className="carousel"
+        onMouseEnter={onPointerEnter}
+        onMouseLeave={onPointerLeave}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{
+          position:'relative', width:'100%',
+          overflow:'hidden', borderRadius:12,
+        }}
+      >
+        <div
+          className="track"
+          style={{
+            display:'flex', transition:'transform 600ms ease',
+            transform:`translateX(-${currentIndex * 100}%)`,
+            width:`${images.length * 100}%`,
+          }}
+        >
+          {images.map((src, i) => (
+            <div key={i} style={{flex:'0 0 100%', position:'relative'}}>
+              <div style={{position:'relative', width:'100%', aspectRatio:'16 / 9', background:'#111'}}>
+                <img
+                  src={src}
+                  alt={`Galería ${i+1}`}
+                  loading="lazy"
+                  style={{
+                    position:'absolute', inset:0, width:'100%', height:'100%',
+                    objectFit:'cover'
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {images.length > 1 && (
+          <>
+            <button
+              aria-label="Anterior"
+              onClick={prev}
+              style={{
+                position:'absolute', top:'50%', left:8, transform:'translateY(-50%)',
+                background:'rgba(0,0,0,.4)', color:'#fff', border:'none',
+                width:36, height:36, borderRadius:18, cursor:'pointer'
+              }}
+            >
+              ‹
+            </button>
+            <button
+              aria-label="Siguiente"
+              onClick={next}
+              style={{
+                position:'absolute', top:'50%', right:8, transform:'translateY(-50%)',
+                background:'rgba(0,0,0,.4)', color:'#fff', border:'none',
+                width:36, height:36, borderRadius:18, cursor:'pointer'
+              }}
+            >
+              ›
+            </button>
+            <div style={{position:'absolute', bottom:8, left:0, right:0, display:'flex', justifyContent:'center', gap:6}}>
+              {images.map((_, i) => (
+                <button key={i} aria-label={`Ir a ${i+1}`} onClick={() => goTo(i)} style={{
+                  width:8, height:8, borderRadius:4, border:'none', cursor:'pointer',
+                  background: i === currentIndex ? '#fff' : 'rgba(255,255,255,.4)'
+                }} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    )
+  }
+
+  function LightboxImage({ src, index, onPrev, onNext }) {
+    const touchRef = useRef({ xStart: 0, xMove: 0, dragging: false })
+    const onTouchStart = (e) => {
+      const t = e.touches[0]
+      touchRef.current = { xStart: t.clientX, xMove: t.clientX, dragging: true }
+    }
+    const onTouchMove = (e) => {
+      if (!touchRef.current.dragging) return
+      touchRef.current.xMove = e.touches[0].clientX
+    }
+    const onTouchEnd = () => {
+      const { xStart, xMove, dragging } = touchRef.current
+      if (!dragging) return
+      const delta = xMove - xStart
+      touchRef.current.dragging = false
+      if (Math.abs(delta) > 40) {
+        if (delta < 0) onNext(); else onPrev()
+      }
+    }
+    return (
+      <div
+        className="lightbox-inner"
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{
+          maxWidth:'min(96vw, 1400px)', maxHeight:'86vh',
+          display:'flex', alignItems:'center', justifyContent:'center'
+        }}
+      >
+        <img
+          src={src}
+          alt={`Galería ampliada ${index+1}`}
+          style={{
+            width:'100%', height:'100%', objectFit:'contain',
+            boxShadow:'0 20px 80px rgba(0,0,0,0.6)'
+          }}
+        />
+      </div>
+    )
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -304,11 +510,18 @@ export default function App() {
 
         
 
+        
+
         <section id="modulos">
           <div className="section-title">ARTISTA</div>
           <div className="modules" style={{gridTemplateColumns:'1fr 1fr', gap:'20px'}}>
             <div className="module-card reveal">
               <p>
+                Flor Palacios es una DJ oriunda de Santa Fe, Argentina.
+                Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽.
+                Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios.
+                Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. 
+                Su objetivo es claro: transmitir emociones y generar conexión en la pista.
                 Flor Palacios es una DJ oriunda de Santa Fe, Argentina.
                 Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽.
                 Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios.
@@ -333,6 +546,20 @@ export default function App() {
                 style={{width:'100%', height:'auto', borderRadius:'12px', objectFit:'cover'}}
               />
             </div>
+          </div>
+        </section>
+
+        {/* Galería full-bleed debajo de ARTISTA */}
+        <section id="galeria" className="reveal" style={{width:'100vw', marginLeft:'calc(50% - 50vw)'}}>
+          <div className="container" style={{padding:'0 16px'}}>
+            <div className="section-title">GALERÍA</div>
+          </div>
+          <div className="masonry" style={{marginTop:12, padding:'0 16px'}}>
+            {galleryImages.map((src, i) => (
+              <div key={i} className="masonry-item" onClick={() => openLightbox(i)} style={{cursor:'zoom-in'}}>
+                <img src={src} alt={`Galería ${i+1}`} loading="lazy" />
+              </div>
+            ))}
           </div>
         </section>
 
@@ -466,6 +693,21 @@ export default function App() {
           </div>
         </footer>
       </main>
+      {lightboxOpen && (
+        <div
+          className="lightbox"
+          onClick={(e) => { if (e.target === e.currentTarget) closeLightbox() }}
+          style={{
+            position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.92)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}
+        >
+          <button aria-label="Cerrar" onClick={closeLightbox} style={{position:'absolute', top:16, right:16, background:'rgba(255,255,255,0.12)', color:'#fff', border:'none', width:40, height:40, borderRadius:20, cursor:'pointer'}}>✕</button>
+          <button aria-label="Anterior" onClick={(e) => { e.stopPropagation(); prevLightbox() }} style={{position:'absolute', left:16, background:'rgba(255,255,255,0.12)', color:'#fff', border:'none', width:44, height:44, borderRadius:22, cursor:'pointer'}}>‹</button>
+          <button aria-label="Siguiente" onClick={(e) => { e.stopPropagation(); nextLightbox() }} style={{position:'absolute', right:16, background:'rgba(255,255,255,0.12)', color:'#fff', border:'none', width:44, height:44, borderRadius:22, cursor:'pointer'}}>›</button>
+          <LightboxImage src={galleryImages[lightboxIndex]} index={lightboxIndex} onPrev={prevLightbox} onNext={nextLightbox} />
+        </div>
+      )}
     </>
   )
 }
