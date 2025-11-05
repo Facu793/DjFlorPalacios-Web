@@ -1,83 +1,74 @@
-# Changelog - DJ Presskit Florencia Palacios
+# Changelog - Florencia Palacios DJ Presskit
 
-## Cambios Implementados
+## Funcionalidades Implementadas
 
-### 🎨 Diseño y UI
+### 🎨 UI/UX
+- **Menú desplegable de navegación**: Menú hamburguesa con links a todas las secciones (Biografía, Eventos, Galería, Video, SoundCloud)
+- **Sistema de idiomas**: Selector de idioma con banderas (Argentina para español, Estados Unidos para inglés)
+  - Traducción completa de todos los textos (menús, secciones, biografía, estadísticas, footer)
+  - Persistencia del idioma seleccionado
+- **Galería de imágenes**: 
+  - Layout masonry responsive con efecto sticky en algunas imágenes
+  - Lightbox para visualización full-screen con navegación por teclado y gestos
+  - Imagen destacada (#14) con tamaño aumentado y sticky
+- **Estadísticas animadas**: Contadores progresivos (Años, Eventos, Minutos) que se animan al entrar en viewport
+- **Carousel de SoundCloud**: Carrusel infinito con efectos 3D (perspectiva, rotación, escalado) para las portadas de tracks
+- **Imagen sticky en biografía**: Imagen que se mantiene fija mientras se lee el texto
 
-#### Iconos Sociales
-- **SoundCloud Icon**: Reemplazado el SVG por imagen PNG personalizada (`sounCloud.png`)
-  - Aplicado filtro CSS para color rosado (#ff2da1) consistente con el tema
-  - Tamaño ajustado: 40px en nav, 30px en otras secciones
-  - Animación de vibración sutil al pasar el mouse sobre todos los iconos sociales
+### 🎬 Multimedia
+- **Video de YouTube embebido**: Sección destacada con video de YouTube
+- **Integración con SoundCloud**: 
+  - Carga de tracks desde JSON
+  - Fetch de portadas mediante oEmbed API
+  - Carrusel con links a tracks de SoundCloud
 
-#### Layout y Estructura
-- **Header**: Reorganización de imágenes
-  - Imagen "FlorPalacioSuperpuesto blanco" centrada en el header
-  - Eliminada imagen "peloAuriculares"
-  - Eliminada imagen "tipografiaRayo" de la sección hero
-  - Texto "DJ / Productora" y géneros musicales movidos debajo de la imagen principal
+### ⚡ Optimizaciones de Rendimiento
+- **Throttle en eventos de scroll**: Limitación de eventos wheel a ~60fps para mejor rendimiento
+- **CSS Contain Property**: Optimización de reflows/repaints en elementos animados
+- **Prefers-reduced-motion**: Soporte completo para usuarios con preferencia de movimiento reducido
+- **Lazy loading**: Carga diferida de imágenes de la galería
+- **Intersection Observer**: Pausado automático de carousels cuando no están visibles
 
-- **Sección ARTISTA**: Layout de dos columnas
-  - Texto a la izquierda con información actualizada
-  - Imagen `image1.JPEG` agregada a la derecha
-  - Grid responsive con gap de 20px
+### 📱 Responsive Design
+- **Layout adaptativo**: 
+  - Desktop: 4 columnas en galería
+  - Tablet: 3 columnas
+  - Móvil: 1-2 columnas según tamaño
+- **Desactivación de efectos sticky en móvil**: Mejor UX en pantallas pequeñas
+- **Header responsive**: Menú y banderas adaptados a diferentes tamaños
 
-### 📝 Tipografía
+### 🎯 Accesibilidad
+- **Soporte para zoom**: Ctrl/Cmd + scroll funciona correctamente
+- **Prefers-reduced-motion**: Respeta preferencias de accesibilidad del usuario
+- **ARIA labels**: Etiquetas apropiadas en elementos interactivos
 
-- **Fuente principal**: Cambiada de Poppins a **Montserrat** en todo el sitio
-- **Google Fonts**: Actualizado `index.html` para cargar Montserrat (pesos 300-800)
-- **Sección ARTISTA**: 
-  - Tamaño de fuente: 18px
-  - Peso: 500 (medium)
-  - Color: #f5f7ff (blanco más brillante)
-  - Line-height: 1.8
-  - Letter-spacing: 0.3px
+### 🔧 Mejoras Técnicas
+- **Smooth scroll personalizado**: Scroll suave con requestAnimationFrame
+- **Gestión de estado**: Estados para idioma, menú, lightbox, carousels
+- **Error handling**: Manejo robusto de errores en carga de JSON y APIs externas
+- **Favicon personalizado**: Logo "peloAuriculares.png" como favicon
+- **Footer con logo**: Imagen del logo en el footer
 
-### 🎭 Animaciones
-
-- **Hover en iconos sociales**: Animación de vibración sutil
-  - Movimiento mínimo (1px máximo)
-  - Rotación leve (2 grados máximo)
-  - Duración: 1.2s
-  - Aplicada a todos los iconos (SVG e imágenes)
-
-### 📄 Contenido
-
-- **Sección ARTISTA**: Texto actualizado con información sobre:
-  - Trayectoria y ubicaciones (Rosario 🇦🇷 y Tulum 🇲🇽)
-  - Colaboraciones con DJs nacionales e internacionales
-  - Presentaciones en distintas ciudades
-  - Proyectos de producción musical
-
-- **Bandera de países**: Agregadas banderas emoji (🇦🇷 y 🇲🇽) en el texto
-
-### 🖼️ Imágenes
-
-- **Nuevas imágenes agregadas**:
-  - `/image/imagenCuerpo/image1.JPEG` - Foto de DJ en acción
-  - `/image/nubeSounCloud/sounCloud.png` - Icono personalizado de SoundCloud
-
-### 🎯 Estilos CSS
-
-- Ajustes de espaciado y posicionamiento
-- Mejoras en contraste y legibilidad del texto
-- Consistencia visual en toda la aplicación
+### 📝 Contenido
+- **Secciones de eventos**: Upcoming Events y Past Events ordenados por fecha
+- **Biografía bilingüe**: Texto completo traducido al inglés
+- **Eliminación de secciones**: Removidas Top Releases, Technical Rider y Contacto
 
 ## Archivos Modificados
 
-- `src/App.jsx` - Estructura y contenido
-- `src/style.css` - Estilos y tipografía
-- `src/SoundCloudIcon.jsx` - Componente de icono personalizado
-- `index.html` - Importación de Google Fonts
-- `public/image/nubeSounCloud/sounCloud.png` - Nuevo icono
-- `public/image/imagenCuerpo/image1.JPEG` - Nueva imagen
+- `src/App.jsx`: Componente principal con todas las funcionalidades
+- `src/style.css`: Estilos responsive y animaciones
+- `index.html`: Favicon y metadata
+- `src/sc-tracks.json`: Lista de tracks de SoundCloud
+- `vite.config.js`: Configuración para GitHub Pages
+- `.github/workflows/deploy.yml`: Pipeline de deployment automático
 
-## Tecnologías
+## Dependencias Agregadas
 
-- React 18.3.1
-- Vite 5.4.0
-- Montserrat (Google Fonts)
-- CSS3 con animaciones y filtros
+- `country-flag-icons`: Librería para iconos de banderas
 
+## Notas de Deployment
 
-
+- Configurado para GitHub Pages con GitHub Actions
+- Base URL configurable según nombre del repositorio
+- Build automático en cada push a main/master

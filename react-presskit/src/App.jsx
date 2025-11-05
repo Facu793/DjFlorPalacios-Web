@@ -112,6 +112,9 @@ export default function App() {
     }
   }
 
+  // YouTube videos state (loaded from /yt-video.json)
+  const [ytVideos, setYtVideos] = useState([])
+  const [ytVideoIndex, setYtVideoIndex] = useState(0)
   // SoundCloud covers state (loaded from /soundcloud-covers.json)
   const [scImages, setScImages] = useState([])
   // SoundCloud tracks state (loaded from /soundcloud-tracks.json)
@@ -131,7 +134,6 @@ export default function App() {
       for (const name of names) {
         const url = makeUrl(name)
         try {
-          console.log('Trying JSON:', url)
           const r = await fetch(url, { cache: 'no-store' })
           if (!r.ok) continue
           const txt = await r.text()
@@ -150,17 +152,29 @@ export default function App() {
         try {
           const mod = await import('./sc-tracks.json')
           tracks = mod.default || mod
-          console.log('Loaded SoundCloud tracks from src fallback:', tracks.length)
         } catch (e) {
-          console.warn('Fallback import ./sc-tracks.json failed', e)
         }
       }
-      if (mounted) {
-        if (Array.isArray(tracks)) {
-          console.log('Loaded SoundCloud tracks:', tracks.length)
-          setScTracks(tracks)
-        } else {
-          console.warn('No tracks JSON found (tried: soundcloud-tracks.json, sc-tracks.json, sc-tracks.json.json)')
+      if (mounted && Array.isArray(tracks)) {
+        setScTracks(tracks)
+      }
+
+      // Cargar videos de YouTube
+      let videos = await fetchJsonCandidates(['yt-video.json', 'youtube-videos.json'])
+      if (!Array.isArray(videos)) {
+        try {
+          const mod = await import('./yt-video.json')
+          videos = mod.default || mod
+        } catch (e) {
+        }
+      }
+      if (mounted && Array.isArray(videos) && videos.length > 0) {
+        setYtVideos(videos)
+        // Buscar si el video actual (5peAQH-GzKs) está en la lista
+        const currentVideoId = '5peAQH-GzKs'
+        const foundIndex = videos.findIndex(url => url.includes(currentVideoId))
+        if (foundIndex >= 0) {
+          setYtVideoIndex(foundIndex)
         }
       }
     })()
@@ -408,31 +422,82 @@ export default function App() {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
     const [noAnim, setNoAnim] = useState(false)
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const rootRef = useRef(null)
     const timerRef = useRef(0)
+    
     const goTo = (idx) => { const n = images.length || 1; setCurrentIndex(((idx % n) + n) % n) }
     const next = () => goTo(currentIndex + 1)
     const prev = () => goTo(currentIndex - 1)
-    useEffect(() => { if (prefersReducedMotion || isPaused || images.length <= 1) return; timerRef.current = window.setTimeout(next, intervalMs); return () => { if (timerRef.current) window.clearTimeout(timerRef.current) } }, [currentIndex, isPaused, intervalMs, images.length, prefersReducedMotion])
-    useEffect(() => { const el = rootRef.current; if (!el) return; const io = new IntersectionObserver((e)=>e.forEach(x=>setIsPaused(!x.isIntersecting)), {threshold:0.2}); io.observe(el); return () => io.disconnect() }, [])
+    
+    // Autoplay del carousel - IGNORAMOS prefersReducedMotion para forzar el autoplay
+    useEffect(() => { 
+      if (isPaused) return
+      if (images.length <= 1) return
+      
+      // Limpiar timer anterior
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = 0
+      }
+      
+      // Configurar nuevo timer - sin requestAnimationFrame para que sea más suave y sin saltos
+      timerRef.current = window.setTimeout(() => {
+        setCurrentIndex((prev) => {
+          const n = images.length || 1
+          return ((prev + 1) % n + n) % n
+        })
+      }, intervalMs) // Usar el intervalo proporcionado (7 segundos)
+      
+      return () => { 
+        if (timerRef.current) {
+          clearTimeout(timerRef.current)
+          timerRef.current = 0
+        }
+      }
+    }, [currentIndex, isPaused, intervalMs, images.length])
+    
+    // IntersectionObserver para pausar cuando no está visible
+    useEffect(() => { 
+      const el = rootRef.current
+      if (!el) return
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          // Solo pausar si está completamente fuera de vista (menos del 10% visible)
+          const shouldPause = entry.intersectionRatio < 0.1
+          setIsPaused(shouldPause)
+        })
+      }, { threshold: [0, 0.1, 0.5, 1], rootMargin: '0px' })
+      io.observe(el)
+      return () => io.disconnect()
+    }, [])
     // snap back when reaching the cloned tail to create infinite loop (forward)
     useEffect(() => {
       if (images.length === 0) return
       if (currentIndex === images.length) {
         const t = setTimeout(() => {
-          setNoAnim(true)
-          setCurrentIndex(0)
-          requestAnimationFrame(() => setNoAnim(false))
-        }, 610)
+          // Usar múltiples requestAnimationFrame para asegurar que el DOM esté listo
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setNoAnim(true)
+              requestAnimationFrame(() => {
+                setCurrentIndex(0)
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    setNoAnim(false)
+                  })
+                })
+              })
+            })
+          })
+        }, 5100) // Esperar a que termine la animación de 5s antes de hacer el snap
         return () => clearTimeout(t)
       }
     }, [currentIndex, images.length])
     const CARD = 400
     const GAP = 48
     return (
-      <div ref={rootRef} style={{position:'relative', overflow:'hidden', width:'100vw', maxWidth:'100vw', marginLeft:'calc(50% - 50vw)', perspective:1200}}>
-        <div style={{display:'flex', gap:`${GAP}px`, width:(extendedItems.length) * (CARD + GAP), transform:`translateX(-${currentIndex * (CARD + GAP)}px)`, transition: (noAnim || prefersReducedMotion) ? 'none' : 'transform 600ms ease', padding:`0 ${GAP}px`}}>
+      <div ref={rootRef} className="soundcloud-carousel-container" style={{position:'relative', overflow:'hidden', width:'100vw', maxWidth:'100vw', marginLeft:'calc(50% - 50vw)', perspective:1200}}>
+        <div style={{display:'flex', gap:`${GAP}px`, width:(extendedItems.length) * (CARD + GAP), transform:`translate3d(-${currentIndex * (CARD + GAP)}px, 0, 0)`, transition: noAnim ? 'none' : 'transform 5000ms cubic-bezier(0.4, 0, 0.2, 1)', padding:`0 ${GAP}px`, willChange:'transform', backfaceVisibility:'hidden'}}>
           {extendedItems.map((item, i) => {
             const offset = i - currentIndex
             const clamped = Math.max(-2, Math.min(2, offset))
@@ -442,9 +507,11 @@ export default function App() {
             const scale = isCenter ? 1.08 : 1 - Math.abs(clamped) * 0.12
             const opacity = isCenter ? 1 : 1 - Math.abs(clamped) * 0.2
             const zIndex = isCenter ? 3 : 1
+            // Usar una key única basada en el índice del item original para evitar re-renders innecesarios
+            const itemKey = i < items.length ? i : i - items.length
             return (
-              <div key={i} style={{flex:'0 0 auto', width:CARD, position:'relative', cursor:'pointer', transform:`translateZ(0)`, willChange:'transform, opacity', zIndex, contain:'layout style paint'}} onClick={() => window.open(item.url, '_blank', 'noopener') }>
-                <div style={{position:'relative', width:'100%', height:CARD, background:'#000', overflow:'hidden', borderRadius:22, boxShadow: isCenter ? '0 18px 50px rgba(255,45,161,.25), 0 12px 40px rgba(0,0,0,.42)' : '0 14px 44px rgba(0,0,0,.38)', transform: prefersReducedMotion ? 'none' : `translateZ(${translateZ}px) rotateY(${rotate}deg) scale(${scale})`, transformStyle:'preserve-3d', transformOrigin: offset < 0 ? 'right center' : offset > 0 ? 'left center' : 'center', transition: prefersReducedMotion ? 'none' : 'transform 450ms ease, opacity 450ms ease, box-shadow 450ms ease', opacity, contain:'layout style paint'}}>
+              <div key={`item-${itemKey}-${i}`} style={{flex:'0 0 auto', width:CARD, position:'relative', cursor:'pointer', transform:`translateZ(0)`, willChange:'transform, opacity', zIndex, contain:'layout style paint', backfaceVisibility:'hidden', WebkitBackfaceVisibility:'hidden', perspective:'1000px'}} onClick={() => window.open(item.url, '_blank', 'noopener') }>
+                <div style={{position:'relative', width:'100%', height:CARD, background:'#000', overflow:'hidden', borderRadius:22, boxShadow: isCenter ? '0 18px 50px rgba(255,45,161,.25), 0 12px 40px rgba(0,0,0,.42)' : '0 14px 44px rgba(0,0,0,.38)', transform: `translate3d(0, 0, ${translateZ}px) rotateY(${rotate}deg) scale(${scale})`, transformStyle:'preserve-3d', transformOrigin: offset < 0 ? 'right center' : offset > 0 ? 'left center' : 'center', transition: 'transform 5000ms cubic-bezier(0.4, 0, 0.2, 1), opacity 5000ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 5000ms cubic-bezier(0.4, 0, 0.2, 1)', opacity, contain:'layout style paint', willChange:'transform, opacity', backfaceVisibility:'hidden', WebkitBackfaceVisibility:'hidden'}}>
                   <img src={item.thumb} alt={`SC ${i+1}`} loading="lazy" style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center'}} />
                   <div style={{position:'absolute', inset:0, boxShadow:'inset 0 0 0 2px rgba(155,92,255,.25)', borderRadius:22, pointerEvents:'none'}} />
                 </div>
@@ -479,9 +546,30 @@ export default function App() {
     const prev = () => goTo(currentIndex - 1)
 
     useEffect(() => {
-      if (prefersReducedMotion || isPaused || tracks.length <= 1) return
-      timerRef.current = window.setTimeout(next, intervalMs)
-      return () => { if (timerRef.current) window.clearTimeout(timerRef.current) }
+      if (prefersReducedMotion) return
+      if (isPaused) return
+      if (tracks.length <= 1) return
+      
+      // Limpiar timer anterior
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = 0
+      }
+      
+      // Configurar nuevo timer usando el estado actualizado
+      timerRef.current = window.setTimeout(() => {
+        setCurrentIndex((prev) => {
+          const n = tracks.length || 1
+          return ((prev + 1) % n + n) % n
+        })
+      }, intervalMs)
+      
+      return () => { 
+        if (timerRef.current) {
+          clearTimeout(timerRef.current)
+          timerRef.current = 0
+        }
+      }
     }, [currentIndex, isPaused, intervalMs, tracks.length, prefersReducedMotion])
 
     useEffect(() => {
@@ -614,7 +702,6 @@ export default function App() {
 
   useEffect(() => {
     // Inicializar smooth scroll siempre (ignorar prefers-reduced-motion para esta funcionalidad)
-    console.log('Smooth scroll initialized')
     
     // Función throttle para limitar la frecuencia de ejecución
     const throttle = (func, limit) => {
@@ -1035,17 +1122,62 @@ export default function App() {
           <div className="reveal">
             <div
               className="card"
-              style={{ overflow:'hidden', padding:0, borderRadius:16, border:'1px solid var(--surface)' }}
+              style={{ overflow:'hidden', padding:0, borderRadius:16, border:'1px solid var(--surface)', position:'relative' }}
             >
               <div style={{ position:'relative', width:'100%', aspectRatio:'16 / 9', background:'#000' }}>
-                <iframe
-                  title={t[language].video.title}
-                  src="https://www.youtube.com/embed/5peAQH-GzKs"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  style={{ position:'absolute', inset:0, width:'100%', height:'100%', border:0 }}
-                />
+                {ytVideos.length > 0 && (() => {
+                  const currentVideo = ytVideos[ytVideoIndex]
+                  // Convertir URL watch?v= a formato embed
+                  const videoId = currentVideo.match(/[?&]v=([^&]+)/)?.[1] || currentVideo.split('/').pop()
+                  const embedUrl = `https://www.youtube.com/embed/${videoId}`
+                  return (
+                    <iframe
+                      key={ytVideoIndex}
+                      title={t[language].video.title}
+                      src={embedUrl}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      style={{ position:'absolute', inset:0, width:'100%', height:'100%', border:0 }}
+                    />
+                  )
+                })()}
               </div>
+              {ytVideos.length > 1 && (
+                <>
+                  <button
+                    aria-label="Video anterior"
+                    onClick={() => setYtVideoIndex((prev) => (prev - 1 + ytVideos.length) % ytVideos.length)}
+                    style={{
+                      position:'absolute', left:16, top:'50%', transform:'translateY(-50%)',
+                      background:'rgba(0,0,0,0.6)', backdropFilter:'blur(8px)',
+                      color:'#fff', border:'none', width:44, height:44, borderRadius:22,
+                      cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
+                      fontSize:24, fontWeight:'bold', zIndex:10,
+                      transition:'background 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
+                  >
+                    ‹
+                  </button>
+                  <button
+                    aria-label="Video siguiente"
+                    onClick={() => setYtVideoIndex((prev) => (prev + 1) % ytVideos.length)}
+                    style={{
+                      position:'absolute', right:16, top:'50%', transform:'translateY(-50%)',
+                      background:'rgba(0,0,0,0.6)', backdropFilter:'blur(8px)',
+                      color:'#fff', border:'none', width:44, height:44, borderRadius:22,
+                      cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
+                      fontSize:24, fontWeight:'bold', zIndex:10,
+                      transition:'background 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
+                  >
+                    ›
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -1056,7 +1188,7 @@ export default function App() {
             <div className="section-title">{t[language].sections.soundcloud}</div>
             <div style={{marginTop:12}}>
               {Array.isArray(scThumbs) && scThumbs.length > 0
-                ? <ImageCarouselWithLinks items={scThumbs} intervalMs={5000} />
+                ? <ImageCarouselWithLinks items={scThumbs} intervalMs={7000} />
                 : <SoundCloudCarousel tracks={scTracks} intervalMs={6000} />}
             </div>
           </section>
