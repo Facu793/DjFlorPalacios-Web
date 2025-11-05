@@ -77,6 +77,18 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    const root = document.documentElement
+    const setHeaderVar = () => {
+      const headerEl = document.querySelector('header')
+      const h = headerEl ? headerEl.offsetHeight : 70
+      root.style.setProperty('--header-h', `${h}px`)
+    }
+    setHeaderVar()
+    window.addEventListener('resize', setHeaderVar)
+    return () => window.removeEventListener('resize', setHeaderVar)
+  }, [])
+
+  useEffect(() => {
     // Inicializar smooth scroll siempre (ignorar prefers-reduced-motion para esta funcionalidad)
     console.log('Smooth scroll initialized')
     
@@ -170,6 +182,65 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    // Contadores progresivos: 4s hasta el valor final
+    const DURATION = 4000
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3)
+
+    const formatValue = (value, el) => {
+      const format = el.getAttribute('data-format')
+      const suffix = el.getAttribute('data-suffix') || ''
+      if (format === 'kPlus') {
+        const v = Math.round(value)
+        const k = Math.round(v / 1000)
+        return `${k}k+`
+      }
+      return `${Math.round(value)}${suffix}`
+    }
+
+    const runCounter = (el) => {
+      const target = Number(el.getAttribute('data-target') || '0')
+      let start = 0
+      let startTs = 0
+      let raf = 0
+      const step = (ts) => {
+        if (!startTs) startTs = ts
+        const t = Math.min(1, (ts - startTs) / DURATION)
+        const eased = easeOutCubic(t)
+        const current = start + (target - start) * eased
+        el.textContent = formatValue(current, el)
+        if (t < 1) {
+          raf = requestAnimationFrame(step)
+        } else {
+          el.textContent = formatValue(target, el)
+        }
+      }
+      raf = requestAnimationFrame(step)
+      return () => cancelAnimationFrame(raf)
+    }
+
+    const disposers = []
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in')
+          const nums = e.target.querySelectorAll('.num[data-target]')
+          nums.forEach((n) => {
+            disposers.push(runCounter(n))
+          })
+          io.unobserve(e.target)
+        }
+      })
+    }, { threshold: 0.2 })
+
+    document.querySelectorAll('.stats.reveal').forEach(el => io.observe(el))
+
+    return () => {
+      io.disconnect()
+      disposers.forEach(fn => fn && fn())
+    }
+  }, [])
+
   return (
     <>
       <canvas ref={canvasRef} id="bg-canvas" aria-hidden="true" style={{position:'fixed', inset:0, zIndex:-2, width:'100vw', height:'100vh', pointerEvents:'none'}} />
@@ -211,6 +282,20 @@ export default function App() {
             <div className="subtitle">DJ / Productora</div>
             <div className="genres">PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE <span className="badge">•</span></div>
           </div>
+          <div className="stats reveal" style={{marginTop:16}}>
+            <div className="stat">
+              <div className="num" data-target="6" data-suffix="+">0</div>
+              <div className="label">Años</div>
+            </div>
+            <div className="stat">
+              <div className="num" data-target="120" data-suffix="+">0</div>
+              <div className="label">Eventos</div>
+            </div>
+            <div className="stat">
+              <div className="num" data-target="10000" data-format="kPlus">0</div>
+              <div className="label">Minutos</div>
+            </div>
+          </div>
         </div>
       </div>
       <main className="container">
@@ -229,6 +314,7 @@ export default function App() {
                 Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios.
                 Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. 
                 Su objetivo es claro: transmitir emociones y generar conexión en la pista.
+                
               </p>
               <p style={{marginTop:10}}>  
                 En su recorrido compartió cabina con DJs nacionales e internacionales como Budakid, Chapa & Castelo, Greta Meier, John Cosani y Kabi, entre otros.
@@ -240,7 +326,7 @@ export default function App() {
                 
               </p>
             </div>
-            <div className="module-card reveal sticky-image" style={{position:'sticky', top:'70px', alignSelf:'start'}}>
+            <div className="module-card reveal sticky-image" style={{position:'sticky', top:'var(--header-h, 70px)', alignSelf:'start'}}>
               <img 
                 src="/image/imagenCuerpo/image1.JPEG" 
                 alt="Flor Palacios DJ" 
