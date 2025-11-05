@@ -513,7 +513,7 @@ export default function App() {
         
 
         <section id="modulos">
-          <div className="section-title">ARTISTA</div>
+          <div className="section-title">Biografia</div>
           <div className="modules" style={{gridTemplateColumns:'1fr 1fr', gap:'20px'}}>
             <div className="module-card reveal">
               <p>
@@ -603,43 +603,28 @@ export default function App() {
           </div>
         </section>
 
-        <section id="bio">
-          <div className="section-title">BIO</div>
-          <div className="grid" style={{gridTemplateColumns:'1.2fr .8fr', gap:18}}>
-            <div className="card reveal">
-              <p>
-                Florencia Palacios es una DJ y productora de Esperanza, Santa Fe. Su sonido
-                se caracteriza por líneas de bajo poderosas, percusiones intensas y melodías
-                envolventes, navegando entre el Techno, el Deep y el Progressive.
-              </p>
-              <p>
-                Ha compartido cabina con talentos locales e internacionales y su música ha
-                recibido el apoyo de referentes de la escena. Se presentó en clubes y festivales
-                a lo largo de Argentina y el exterior.
-              </p>
-              <p>
-                Actualmente trabaja en nuevos lanzamientos y sets híbridos que combinan
-                performance y producción en vivo.
-              </p>
-            </div>
-            <div className="grid">
-              <div className="stats reveal">
-                <div className="stat"><div className="num" id="years">6+</div><div className="label">Años</div></div>
-                <div className="stat"><div className="num" id="gigs">120+</div><div className="label">Eventos</div></div>
-                <div className="stat"><div className="num" id="minutes">10k+</div><div className="label">Minutos</div></div>
-              </div>
-              <div className="media-embed sc-embed reveal">
+        {/* YouTube destacado */}
+        <section id="youtube">
+          <div className="section-title">VIDEO DESTACADO</div>
+          <div className="reveal">
+            <div
+              className="card"
+              style={{ overflow:'hidden', padding:0, borderRadius:16, border:'1px solid var(--surface)' }}
+            >
+              <div style={{ position:'relative', width:'100%', aspectRatio:'16 / 9', background:'#000' }}>
                 <iframe
-                  title="SoundCloud Flor Palacios"
-                  height="360"
-                  scrolling="no"
-                  allow="autoplay"
-                  src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/florpalaciosdj&visual=true&color=%23ff2da1&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
-                </iframe>
+                  title="YouTube destacado"
+                  src="https://www.youtube.com/embed/5peAQH-GzKs"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  style={{ position:'absolute', inset:0, width:'100%', height:'100%', border:0 }}
+                />
               </div>
             </div>
           </div>
         </section>
+
+
 
         <section id="lanzamientos">
           <div className="section-title">TOP RELEASES</div>
