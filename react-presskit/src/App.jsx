@@ -5,8 +5,8 @@ import Flag from 'country-flag-icons/react/3x2'
 export default function App() {
   const canvasRef = useRef(null)
   const galleryImages = [
-    '/image/galeria/1.JPEG',
-    '/image/galeria/2.JPEG',
+    './image/galeria/1.JPEG',
+    './image/galeria/2.JPEG',
     '/image/galeria/3.JPG',
     '/image/galeria/4.JPEG',
     '/image/galeria/5.JPEG',
@@ -19,7 +19,7 @@ export default function App() {
     '/image/galeria/12.JPEG',
     '/image/galeria/13.JPEG',
     '/image/galeria/15.JPG',
-    '/image/galeria/14.jpeg',
+    '/image/galeria/14.jpeg', 
   ]
 
   // Lightbox state for gallery
