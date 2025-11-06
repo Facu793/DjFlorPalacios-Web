@@ -7,19 +7,19 @@ export default function App() {
   const galleryImages = [
     './image/galeria/1.JPEG',
     './image/galeria/2.JPEG',
-    '/image/galeria/3.JPG',
-    '/image/galeria/4.JPEG',
-    '/image/galeria/5.JPEG',
-    '/image/galeria/6.JPEG',
-    '/image/galeria/7.JPEG',
-    '/image/galeria/8.JPEG',
-    '/image/galeria/9.JPEG',
-    '/image/galeria/10.JPEG',
-    '/image/galeria/11.JPEG',
-    '/image/galeria/12.JPEG',
-    '/image/galeria/13.JPEG',
-    '/image/galeria/15.JPG',
-    '/image/galeria/14.jpeg', 
+    './image/galeria/3.JPG',
+    './image/galeria/4.JPEG',
+    './image/galeria/5.JPEG',
+    './image/galeria/6.JPEG',
+    './image/galeria/7.JPEG',
+    './image/galeria/8.JPEG',
+    './image/galeria/9.JPEG',
+    './image/galeria/10.JPEG',
+    './image/galeria/11.JPEG',
+    './image/galeria/12.JPEG',
+    './image/galeria/13.JPEG',
+    './image/galeria/15.JPG',
+    './image/galeria/14.jpeg', 
   ]
 
   // Lightbox state for gallery
@@ -29,6 +29,51 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   // Language state
   const [language, setLanguage] = useState('es') // 'es' or 'en'
+  // Mobile detection state
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  // Gallery carousel state for mobile
+  const [galleryIndex, setGalleryIndex] = useState(0)
+  const touchStartRef = useRef({ x: 0, y: 0 })
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  
+  const nextGalleryImage = () => {
+    setGalleryIndex((prev) => (prev + 1) % galleryImages.length)
+  }
+  
+  const prevGalleryImage = () => {
+    setGalleryIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
+  }
+  
+  // Touch handlers for swipe gestures on mobile
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0]
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+  }
+  
+  const handleTouchEnd = (e) => {
+    if (!touchStartRef.current.x || !touchStartRef.current.y) return
+    const touch = e.changedTouches[0]
+    const deltaX = touch.clientX - touchStartRef.current.x
+    const deltaY = touch.clientY - touchStartRef.current.y
+    const minSwipeDistance = 50
+    
+    // Only handle horizontal swipes (ignore vertical scrolling)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+      if (deltaX > 0) {
+        prevGalleryImage()
+      } else {
+        nextGalleryImage()
+      }
+    }
+    touchStartRef.current = { x: 0, y: 0 }
+  }
   
   // Translations
   const t = {
@@ -1021,7 +1066,7 @@ export default function App() {
           <div className="logo">DJ PRESSKIT • Flor Palacios</div>
           <div className="social-actions">
             <a className="social-btn sc" aria-label="SoundCloud" title="SoundCloud" href="https://soundcloud.com/florpalaciosdj" target="_blank" rel="noopener">
-              <SoundCloudIcon src="/image/nubeSounCloud/sounCloud.png" />
+              <SoundCloudIcon src="./image/nubeSounCloud/sounCloud.png" />
             </a>
             <a className="social-btn ig" aria-label="Instagram" title="Instagram" href="https://www.instagram.com/florpalaciosok?igsh=MXJ0ZjNtdDFuNHlpdQ%3D%3D&utm_source=qr" target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1134,7 +1179,7 @@ export default function App() {
       <div className="top-logo">
         <div className="top-logo-center">
           <img
-            src="/image/tipografia/FlorPalacioSuperpuesto blanco.png"
+            src="./image/tipografia/FlorPalacioSuperpuesto blanco.png"
             alt="Flor Palacios"
             className="top-logo-img center"
           />
@@ -1182,7 +1227,7 @@ export default function App() {
             </div>
             <div className="module-card reveal sticky-image" style={{position:'sticky', top:'var(--header-h, 70px)', alignSelf:'start'}}>
               <img 
-                src="/image/imagenCuerpo/image1.JPEG" 
+                src="./image/imagenCuerpo/image1.JPEG" 
                 alt="Flor Palacios DJ" 
                 style={{width:'100%', height:'auto', borderRadius:'12px', objectFit:'cover'}}
               />
@@ -1239,17 +1284,145 @@ export default function App() {
           <div className="container" style={{padding:'0 16px'}}>
             <div className="section-title">{t[language].sections.gallery}</div>
           </div>
-          <div className="masonry" style={{marginTop:12, padding:'0 16px'}}>
-            {galleryImages.map((src, i) => {
-              const stickyClass = (src.includes('/14'))
-                ? 'stick full-stick big-14'
-                : ((i % 5 === 1 || i % 7 === 3) ? 'stick ' + ((i % 2 === 0) ? 'offset-1' : 'offset-2') : '')
-              return (
-              <div key={i} className={`masonry-item ${stickyClass}`} onClick={() => openLightbox(i)} style={{cursor:'zoom-in'}}>
-                <img src={src} alt={`${t[language].gallery.alt} ${i+1}`} loading="lazy" />
+          {isMobile ? (
+            /* Carousel para móvil - una imagen a la vez */
+            <div style={{
+              marginTop: 12,
+              padding: '0 16px',
+              position: 'relative',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <button
+                  aria-label="Imagen anterior"
+                  onClick={prevGalleryImage}
+                  style={{
+                    position: 'absolute',
+                    left: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(8px)',
+                    color: '#fff',
+                    border: 'none',
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 24,
+                    fontWeight: 'bold',
+                    zIndex: 10,
+                    transition: 'background 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
+                >
+                  ‹
+                </button>
+                <div
+                  onClick={() => openLightbox(galleryIndex)}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  style={{
+                    width: '100%',
+                    maxWidth: '100%',
+                    cursor: 'zoom-in',
+                    position: 'relative',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    background: '#111',
+                    border: '1px solid var(--surface)',
+                    boxShadow: '0 6px 18px rgba(155,92,255,0.08)'
+                  }}
+                >
+                  <img
+                    key={galleryIndex}
+                    src={galleryImages[galleryIndex]}
+                    alt={`${t[language].gallery.alt} ${galleryIndex + 1}`}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      display: 'block',
+                      objectFit: 'contain',
+                      maxHeight: '70vh'
+                    }}
+                  />
+                </div>
+                <button
+                  aria-label="Imagen siguiente"
+                  onClick={nextGalleryImage}
+                  style={{
+                    position: 'absolute',
+                    right: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(8px)',
+                    color: '#fff',
+                    border: 'none',
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 24,
+                    fontWeight: 'bold',
+                    zIndex: 10,
+                    transition: 'background 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.6)'}
+                >
+                  ›
+                </button>
               </div>
-            )})}
-          </div>
+              <div style={{
+                marginTop: 12,
+                textAlign: 'center',
+                color: 'var(--muted)',
+                fontSize: '14px'
+              }}>
+                {galleryIndex + 1} / {galleryImages.length}
+              </div>
+            </div>
+          ) : (
+            /* Layout masonry para desktop */
+            <div className="masonry" style={{marginTop:12, padding:'0 16px'}}>
+              {galleryImages.map((src, i) => {
+                const stickyClass = (src.includes('/14'))
+                  ? 'stick full-stick big-14'
+                  : ((i % 5 === 1 || i % 7 === 3) ? 'stick ' + ((i % 2 === 0) ? 'offset-1' : 'offset-2') : '')
+                return (
+                <div 
+                  key={i} 
+                  className={`masonry-item ${stickyClass}`} 
+                  onClick={() => openLightbox(i)} 
+                  style={{cursor:'zoom-in'}}
+                >
+                  <img 
+                    src={src} 
+                    alt={`${t[language].gallery.alt} ${i+1}`} 
+                    loading="lazy"
+                  />
+                </div>
+              )})}
+            </div>
+          )}
         </section>
 
         {/* YouTube destacado */}
