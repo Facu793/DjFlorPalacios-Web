@@ -1140,7 +1140,7 @@ export default function App() {
           />
           <div className="hero-text-center">
             <div className="subtitle">{t[language].stats.subtitle}</div>
-            <div className="genres">PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE • INDIE DANCE</div>
+            <div className="genres">• PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE • INDIE DANCE •</div>
           </div>
           <div className="stats reveal" style={{marginTop:16}}>
             <div className="stat">
