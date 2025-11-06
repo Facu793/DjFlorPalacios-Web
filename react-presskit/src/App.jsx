@@ -68,7 +68,7 @@ export default function App() {
       },
       footer: {
         copyright: 'DJ PRESSKIT ® — Florencia Palacios — All Rights Reserved',
-        powered: '@DsFacuCordoba'
+        powered: 'FC DevWorks'
       }
     },
     en: {
@@ -107,7 +107,7 @@ export default function App() {
       },
       footer: {
         copyright: 'DJ PRESSKIT ® — Florencia Palacios — All Rights Reserved',
-        powered: 'DsFacuCordoba'
+        powered: 'FC DevWorks'
       }
     }
   }
@@ -131,6 +131,18 @@ export default function App() {
     'Opening set w/ John Cosani - 2024 Santa Fe',
     'Set from Shyft Studios - Miami',
     'Set from 120bpmstore - Bs.As'
+  ]
+  
+  // Reproducciones de cada track (en el mismo orden que sc-tracks.json)
+  const scTrackPlays = [
+    340, // Warm up w/ Kabi - 2025 - Rafaela
+    750, // Sessions Amygdala Therapy 017 - Bélgica
+    700, // Ephimera Special Sunset mix 2025
+    2560, // Opening w/ Greta Meier - 2024 - Santa Fe
+    730, // Grap Session - Progrssive house mix 2024
+    558, // Opening set w/ John Cosani - 2024 Santa Fe
+    148, // Set from Shyft Studios - Miami
+    255  // Set from 120bpmstore - Bs.As
   ]
   useEffect(() => {
     let mounted = true
@@ -427,7 +439,7 @@ export default function App() {
   }
 
   // Carousel para imágenes con links
-  function ImageCarouselWithLinks({ items, trackTitles = [], intervalMs = 5000 }) {
+  function ImageCarouselWithLinks({ items, trackTitles = [], trackPlays = [], intervalMs = 5000 }) {
     const visibleCards = 3
     const images = items.map(i => i.thumb)
     const extendedItems = items.length > 0 ? [...items, ...items.slice(0, visibleCards)] : []
@@ -526,11 +538,21 @@ export default function App() {
                 <div style={{position:'relative', width:'100%', height:CARD, background:'#000', overflow:'hidden', borderRadius:22, boxShadow: isCenter ? '0 18px 50px rgba(255,45,161,.25), 0 12px 40px rgba(0,0,0,.42)' : '0 14px 44px rgba(0,0,0,.38)', transform: `translate3d(0, 0, ${translateZ}px) rotateY(${rotate}deg) scale(${scale})`, transformStyle:'preserve-3d', transformOrigin: offset < 0 ? 'right center' : offset > 0 ? 'left center' : 'center', transition: 'transform 5000ms cubic-bezier(0.4, 0, 0.2, 1), opacity 5000ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 5000ms cubic-bezier(0.4, 0, 0.2, 1)', opacity, contain:'layout style paint', willChange:'transform, opacity', backfaceVisibility:'hidden', WebkitBackfaceVisibility:'hidden'}}>
                   <img src={item.thumb} alt={`SC ${i+1}`} loading="lazy" style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center'}} />
                   <div style={{position:'absolute', inset:0, boxShadow:'inset 0 0 0 2px rgba(155,92,255,.25)', borderRadius:22, pointerEvents:'none'}} />
-                  {trackTitles[itemKey] && (
+                  {(trackTitles[itemKey] || trackPlays[itemKey]) && (
                     <div style={{position:'absolute', bottom:0, left:0, right:0, background:'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 60%, transparent 100%)', padding:'16px 12px 12px', borderRadius:'0 0 22px 22px', pointerEvents:'none'}}>
-                      <div style={{color:'#fff', fontSize:'13px', fontWeight:600, lineHeight:1.3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', width:'100%', textShadow:'0 1px 3px rgba(0,0,0,0.8)'}}>
-                        {trackTitles[itemKey]}
-                      </div>
+                      {trackTitles[itemKey] && (
+                        <div style={{color:'#fff', fontSize:'13px', fontWeight:600, lineHeight:1.3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', width:'100%', textShadow:'0 1px 3px rgba(0,0,0,0.8)', marginBottom: trackPlays[itemKey] ? '6px' : '0'}}>
+                          {trackTitles[itemKey]}
+                        </div>
+                      )}
+                      {trackPlays[itemKey] > 0 && (
+                        <div style={{display:'flex', alignItems:'center', gap:'6px', color:'rgba(255,255,255,0.9)', fontSize:'11px', fontWeight:500, textShadow:'0 1px 2px rgba(0,0,0,0.8)'}}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{flexShrink:0}}>
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                          <span>{trackPlays[itemKey].toLocaleString()}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1268,7 +1290,7 @@ export default function App() {
             <div className="section-title">{t[language].sections.soundcloud}</div>
             <div style={{marginTop:12}}>
               {Array.isArray(scThumbs) && scThumbs.length > 0
-                ? <ImageCarouselWithLinks items={scThumbs} trackTitles={scTrackTitles} intervalMs={5000} />
+                ? <ImageCarouselWithLinks items={scThumbs} trackTitles={scTrackTitles} trackPlays={scTrackPlays} intervalMs={5000} />
                 : <SoundCloudCarousel tracks={scTracks} trackTitles={scTrackTitles} intervalMs={5000} />}
             </div>
           </section>
