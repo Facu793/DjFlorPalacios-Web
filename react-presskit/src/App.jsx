@@ -1018,7 +1018,7 @@ export default function App() {
       <canvas ref={canvasRef} id="bg-canvas" aria-hidden="true" style={{position:'fixed', inset:0, zIndex:-2, width:'100vw', height:'100vh', pointerEvents:'none'}} />
       <header>
         <div className="container nav">
-          <div className="logo">DJ PRESSKIT • Florencia Palacios</div>
+          <div className="logo">DJ PRESSKIT • Flor Palacios</div>
           <div className="social-actions">
             <a className="social-btn sc" aria-label="SoundCloud" title="SoundCloud" href="https://soundcloud.com/florpalaciosdj" target="_blank" rel="noopener">
               <SoundCloudIcon src="/image/nubeSounCloud/sounCloud.png" />
