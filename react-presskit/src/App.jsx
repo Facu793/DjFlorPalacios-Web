@@ -68,7 +68,7 @@ export default function App() {
       },
       footer: {
         copyright: 'DJ PRESSKIT ® — Florencia Palacios — All Rights Reserved',
-        powered: 'Powered by tu hosting'
+        powered: '@DsFacuCordoba'
       }
     },
     en: {
@@ -107,7 +107,7 @@ export default function App() {
       },
       footer: {
         copyright: 'DJ PRESSKIT ® — Florencia Palacios — All Rights Reserved',
-        powered: 'Powered by tu hosting'
+        powered: 'DsFacuCordoba'
       }
     }
   }
@@ -120,6 +120,18 @@ export default function App() {
   // SoundCloud tracks state (loaded from /soundcloud-tracks.json)
   const [scTracks, setScTracks] = useState([])
   const [scThumbs, setScThumbs] = useState([])
+  
+  // Títulos manuales para los tracks de SoundCloud (en el mismo orden que sc-tracks.json)
+  const scTrackTitles = [
+    'Warm up w/ Kabi - 2025 - Rafaela',
+    'Sessions Amygdala Therapy 017 - Bélgica',
+    'Ephimera Special Sunset mix 2025',
+    'Opening w/ Greta Meier - 2024 - Santa Fe',
+    'Grap Session - Progrssive house mix 2024',
+    'Opening set w/ John Cosani - 2024 Santa Fe',
+    'Set from Shyft Studios - Miami',
+    'Set from 120bpmstore - Bs.As'
+  ]
   useEffect(() => {
     let mounted = true
     const base = (typeof importMeta !== 'undefined' && importMeta.env && importMeta.env.BASE_URL) || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/'
@@ -415,7 +427,7 @@ export default function App() {
   }
 
   // Carousel para imágenes con links
-  function ImageCarouselWithLinks({ items, intervalMs = 5000 }) {
+  function ImageCarouselWithLinks({ items, trackTitles = [], intervalMs = 5000 }) {
     const visibleCards = 3
     const images = items.map(i => i.thumb)
     const extendedItems = items.length > 0 ? [...items, ...items.slice(0, visibleCards)] : []
@@ -514,6 +526,13 @@ export default function App() {
                 <div style={{position:'relative', width:'100%', height:CARD, background:'#000', overflow:'hidden', borderRadius:22, boxShadow: isCenter ? '0 18px 50px rgba(255,45,161,.25), 0 12px 40px rgba(0,0,0,.42)' : '0 14px 44px rgba(0,0,0,.38)', transform: `translate3d(0, 0, ${translateZ}px) rotateY(${rotate}deg) scale(${scale})`, transformStyle:'preserve-3d', transformOrigin: offset < 0 ? 'right center' : offset > 0 ? 'left center' : 'center', transition: 'transform 5000ms cubic-bezier(0.4, 0, 0.2, 1), opacity 5000ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 5000ms cubic-bezier(0.4, 0, 0.2, 1)', opacity, contain:'layout style paint', willChange:'transform, opacity', backfaceVisibility:'hidden', WebkitBackfaceVisibility:'hidden'}}>
                   <img src={item.thumb} alt={`SC ${i+1}`} loading="lazy" style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center'}} />
                   <div style={{position:'absolute', inset:0, boxShadow:'inset 0 0 0 2px rgba(155,92,255,.25)', borderRadius:22, pointerEvents:'none'}} />
+                  {trackTitles[itemKey] && (
+                    <div style={{position:'absolute', bottom:0, left:0, right:0, background:'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 60%, transparent 100%)', padding:'16px 12px 12px', borderRadius:'0 0 22px 22px', pointerEvents:'none'}}>
+                      <div style={{color:'#fff', fontSize:'13px', fontWeight:600, lineHeight:1.3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', width:'100%', textShadow:'0 1px 3px rgba(0,0,0,0.8)'}}>
+                        {trackTitles[itemKey]}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )
@@ -530,7 +549,7 @@ export default function App() {
   }
 
   // Carousel for SoundCloud iframes
-  function SoundCloudCarousel({ tracks, intervalMs = 6000 }) {
+  function SoundCloudCarousel({ tracks, trackTitles = [], intervalMs = 6000 }) {
     // Crear array infinito: último al inicio, todos los tracks, primero al final
     const infiniteTracks = tracks.length > 1 ? [tracks[tracks.length - 1], ...tracks, tracks[0]] : tracks
     const [currentIndex, setCurrentIndex] = useState(tracks.length > 1 ? 1 : 0) // Empezar en el primer track real
@@ -611,25 +630,57 @@ export default function App() {
       return () => io.disconnect()
     }, [])
 
+    // Función para obtener el título por índice (más simple y confiable)
+    const getTrackTitle = (index) => {
+      // El array infinito tiene: [último, ...tracks, primero]
+      // Necesitamos mapear el índice del array infinito al índice original
+      let originalIndex
+      if (tracks.length <= 1) {
+        originalIndex = 0
+      } else if (index === 0) {
+        // Es el clon del último
+        originalIndex = tracks.length - 1
+      } else if (index === infiniteTracks.length - 1) {
+        // Es el clon del primero
+        originalIndex = 0
+      } else {
+        // Es un track original (restamos 1 porque el primero es el clon del último)
+        originalIndex = index - 1
+      }
+      const title = trackTitles[originalIndex] || ''
+      // Debug para el track visible
+      if (index === currentIndex) {
+        console.log('Track index:', index, 'Original index:', originalIndex, 'Title:', title, 'Total titles:', trackTitles.length)
+      }
+      return title
+    }
+
     return (
-      <div ref={rootRef} className="sc-carousel" style={{position:'relative', overflow:'hidden', borderRadius:16, maxWidth:800, margin:'0 auto'}}>
-        <div style={{display:'flex', width:`${infiniteTracks.length * 100}%`, transform:`translateX(-${(currentIndex / infiniteTracks.length) * 100}%)`, transition: (prefersReducedMotion || noTransition) ? 'none' : 'transform 600ms ease'}}>
+      <div ref={rootRef} className="sc-carousel" style={{position:'relative', overflow:'visible', borderRadius:16, maxWidth:800, margin:'0 auto'}}>
+        <div style={{display:'flex', width:`${infiniteTracks.length * 100}%`, transform:`translateX(-${(currentIndex / infiniteTracks.length) * 100}%)`, transition: (prefersReducedMotion || noTransition) ? 'none' : 'transform 600ms ease', overflow:'hidden', borderRadius:16}}>
           {infiniteTracks.map((trackUrl, i) => {
             const embedSrc = `https://w.soundcloud.com/player/?url=${encodeURIComponent(trackUrl)}&visual=false&color=%23ff2da1&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`
+            const trackTitle = getTrackTitle(i)
+            const isVisible = Math.abs(currentIndex - i) <= 1
             return (
-              <div key={i} style={{flex:'0 0 100%', minWidth:'100%'}}>
-                <div style={{position:'relative', width:'100%', height:166, background:'#000'}}>
-                  {Math.abs(currentIndex - i) <= 1 ? (
+              <div key={i} style={{flex:'0 0 100%', minWidth:'100%', display:'flex', flexDirection:'column'}}>
+                <div style={{position:'relative', width:'100%', height:166, background:'#000', borderRadius:'16px 16px 0 0', flexShrink:0, overflow:'hidden'}}>
+                  {isVisible ? (
                     <iframe
                       title={`SC ${i+1}`}
                       src={embedSrc}
                       allow="autoplay; encrypted-media; clipboard-write"
                       referrerPolicy="no-referrer-when-downgrade"
-                      style={{position:'absolute', top:0, left:0, right:0, bottom:0, width:'100%', height:'100%', border:0}}
+                      style={{position:'absolute', top:0, left:0, right:0, bottom:0, width:'100%', height:'100%', border:0, borderRadius:'16px 16px 0 0'}}
                     />
                   ) : (
-                    <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'#000'}} />
+                    <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'#000', borderRadius:'16px 16px 0 0'}} />
                   )}
+                </div>
+                <div style={{background:'rgba(11, 11, 18, 0.95)', padding:'12px 16px', borderRadius:'0 0 16px 16px', textAlign:'center', borderTop:'1px solid rgba(255,255,255,0.1)', flexShrink:0, minHeight:'48px', display:'flex', alignItems:'center', justifyContent:'center', width:'100%'}}>
+                  <div style={{color:'var(--text, #f5f7ff)', fontSize:'14px', fontWeight:500, lineHeight:1.4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', width:'100%'}}>
+                    {trackTitle || `Track ${i + 1}`}
+                  </div>
                 </div>
               </div>
             )
@@ -1217,8 +1268,8 @@ export default function App() {
             <div className="section-title">{t[language].sections.soundcloud}</div>
             <div style={{marginTop:12}}>
               {Array.isArray(scThumbs) && scThumbs.length > 0
-                ? <ImageCarouselWithLinks items={scThumbs} intervalMs={5000} />
-                : <SoundCloudCarousel tracks={scTracks} intervalMs={5000} />}
+                ? <ImageCarouselWithLinks items={scThumbs} trackTitles={scTrackTitles} intervalMs={5000} />
+                : <SoundCloudCarousel tracks={scTracks} trackTitles={scTrackTitles} intervalMs={5000} />}
             </div>
           </section>
         ) : (
