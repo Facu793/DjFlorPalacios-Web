@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+react-presskit/node_modules/
+
+# Build outputs
+dist/
+react-presskit/dist/
+.vite/
+react-presskit/.vite/
+
+# Env / local
+.env
+.env.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+
