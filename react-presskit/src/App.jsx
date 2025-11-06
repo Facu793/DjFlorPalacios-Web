@@ -266,10 +266,19 @@ export default function App() {
   function Carousel({ images, intervalMs = 5000 }) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const rootRef = useRef(null)
     const timerRef = useRef(0)
     const touchRef = useRef({ xStart: 0, xMove: 0, dragging: false })
+
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768)
+      }
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     const goTo = (idx) => {
       const n = images.length
@@ -342,14 +351,15 @@ export default function App() {
         >
           {images.map((src, i) => (
             <div key={i} style={{flex:'0 0 100%', position:'relative'}}>
-              <div style={{position:'relative', width:'100%', aspectRatio:'16 / 9', background:'#111'}}>
+              <div style={{position:'relative', width:'100%', aspectRatio:isMobile ? '4 / 3' : '16 / 9', background:'#111'}}>
                 <img
                   src={src}
                   alt={`Galería ${i+1}`}
                   loading="lazy"
                   style={{
                     position:'absolute', inset:0, width:'100%', height:'100%',
-                    objectFit:'cover'
+                    objectFit:'cover',
+                    maxWidth:'100%'
                   }}
                 />
               </div>
@@ -446,8 +456,17 @@ export default function App() {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
     const [noAnim, setNoAnim] = useState(false)
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
     const rootRef = useRef(null)
     const timerRef = useRef(0)
+    
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768)
+      }
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }, [])
     
     const goTo = (idx) => { const n = images.length || 1; setCurrentIndex(((idx % n) + n) % n) }
     const next = () => goTo(currentIndex + 1)
@@ -517,8 +536,9 @@ export default function App() {
         return () => clearTimeout(t)
       }
     }, [currentIndex, images.length])
-    const CARD = 400
-    const GAP = 48
+    // Tamaños responsive para móviles
+    const CARD = isMobile ? Math.min(320, window.innerWidth - 80) : 400
+    const GAP = isMobile ? 16 : 48
     return (
       <div ref={rootRef} className="soundcloud-carousel-container" style={{position:'relative', overflow:'hidden', width:'100vw', maxWidth:'100vw', marginLeft:'calc(50% - 50vw)', perspective:1200}}>
         <div style={{display:'flex', gap:`${GAP}px`, width:(extendedItems.length) * (CARD + GAP), transform:`translate3d(-${currentIndex * (CARD + GAP)}px, 0, 0)`, transition: noAnim ? 'none' : 'transform 5000ms cubic-bezier(0.4, 0, 0.2, 1)', padding:`0 ${GAP}px`, willChange:'transform', backfaceVisibility:'hidden'}}>
