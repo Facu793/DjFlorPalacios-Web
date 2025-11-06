@@ -46,11 +46,11 @@ export default function App() {
         upcoming: 'PRÓXIMOS EVENTOS',
         past: 'EVENTOS PASADOS',
         gallery: 'GALERÍA',
-        video: 'VIDEO DESTACADO',
+        video: 'VIDEOS DESTACADOS',
         soundcloud: 'SOUNDCLOUD'
       },
       bio: {
-        p1: 'Flor Palacios es una DJ oriunda de Santa Fe, Argentina. Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽. Con más de 7 años de trayectoria, su carrera la llevó a diferentes escenarios. Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. Su objetivo es claro: transmitir emociones y generar conexión en la pista. Flor Palacios es una DJ oriunda de Santa Fe, Argentina. Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽. Con más de 6 años de trayectoria, su carrera la llevó a diferentes escenarios. Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. Su objetivo es claro: transmitir emociones y generar conexión en la pista.',
+        p1: 'Flor Palacios es una DJ oriunda de Santa Fe, Argentina. Actualmente se encuenra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽. Con más de 7 años de trayectoria, su carrera la llevó a diferentes escenarios. Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. Su objetivo es claro: transmitir emociones y generar conexión en la pista.',
         p2: 'En su recorrido compartió cabina con DJs nacionales e internacionales como Budakid, Chapa & Castelo, Greta Meier, John Cosani y Kabi, entre otros. Esto le permitió presentarse en ciudades como Buenos Aires, Rosario y Bariloche, y también expandir su música fuera del país, con presentaciones en Tulum (México).',
         p3: 'Actualmente, Flor está perfeccionándose en producción musical junto a referentes del género, como Ignacio Berardi, Agustín Pietrocola; con el objetivo de lanzar sus próximos tracks.'
       },
@@ -170,8 +170,8 @@ export default function App() {
       }
       if (mounted && Array.isArray(videos) && videos.length > 0) {
         setYtVideos(videos)
-        // Buscar si el video actual (5peAQH-GzKs) está en la lista
-        const currentVideoId = '5peAQH-GzKs'
+        // Buscar si el video actual (m3WmPLg7HHQ) está en la lista
+        const currentVideoId = 'm3WmPLg7HHQ'
         const foundIndex = videos.findIndex(url => url.includes(currentVideoId))
         if (foundIndex >= 0) {
           setYtVideoIndex(foundIndex)
@@ -531,15 +531,38 @@ export default function App() {
 
   // Carousel for SoundCloud iframes
   function SoundCloudCarousel({ tracks, intervalMs = 6000 }) {
-    const [currentIndex, setCurrentIndex] = useState(0)
+    // Crear array infinito: último al inicio, todos los tracks, primero al final
+    const infiniteTracks = tracks.length > 1 ? [tracks[tracks.length - 1], ...tracks, tracks[0]] : tracks
+    const [currentIndex, setCurrentIndex] = useState(tracks.length > 1 ? 1 : 0) // Empezar en el primer track real
     const [isPaused, setIsPaused] = useState(false)
+    const [noTransition, setNoTransition] = useState(false)
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const rootRef = useRef(null)
     const timerRef = useRef(0)
 
     const goTo = (idx) => {
-      const n = tracks.length
-      const next = ((idx % n) + n) % n
+      if (tracks.length <= 1) {
+        setCurrentIndex(0)
+        return
+      }
+      const total = infiniteTracks.length
+      let next = idx
+      
+      // Si llegamos al final (clon del primero), saltar sin animación al inicio real
+      if (idx >= total - 1) {
+        setNoTransition(true)
+        setCurrentIndex(1)
+        setTimeout(() => setNoTransition(false), 50)
+        return
+      }
+      // Si vamos hacia atrás y llegamos al inicio (clon del último), saltar sin animación al final real
+      if (idx <= 0) {
+        setNoTransition(true)
+        setCurrentIndex(total - 2)
+        setTimeout(() => setNoTransition(false), 50)
+        return
+      }
+      
       setCurrentIndex(next)
     }
     const next = () => goTo(currentIndex + 1)
@@ -559,8 +582,14 @@ export default function App() {
       // Configurar nuevo timer usando el estado actualizado
       timerRef.current = window.setTimeout(() => {
         setCurrentIndex((prev) => {
-          const n = tracks.length || 1
-          return ((prev + 1) % n + n) % n
+          const total = infiniteTracks.length
+          // Si llegamos al final, saltar al inicio sin animación
+          if (prev >= total - 1) {
+            setNoTransition(true)
+            setTimeout(() => setNoTransition(false), 50)
+            return 1
+          }
+          return prev + 1
         })
       }, intervalMs)
       
@@ -570,7 +599,7 @@ export default function App() {
           timerRef.current = 0
         }
       }
-    }, [currentIndex, isPaused, intervalMs, tracks.length, prefersReducedMotion])
+    }, [currentIndex, isPaused, intervalMs, tracks.length, prefersReducedMotion, infiniteTracks.length])
 
     useEffect(() => {
       const el = rootRef.current
@@ -584,8 +613,8 @@ export default function App() {
 
     return (
       <div ref={rootRef} className="sc-carousel" style={{position:'relative', overflow:'hidden', borderRadius:16, maxWidth:800, margin:'0 auto'}}>
-        <div style={{display:'flex', width:`${tracks.length * 100}%`, transform:`translateX(-${currentIndex * 100}%)`, transition: prefersReducedMotion ? 'none' : 'transform 600ms ease'}}>
-          {tracks.map((trackUrl, i) => {
+        <div style={{display:'flex', width:`${infiniteTracks.length * 100}%`, transform:`translateX(-${(currentIndex / infiniteTracks.length) * 100}%)`, transition: (prefersReducedMotion || noTransition) ? 'none' : 'transform 600ms ease'}}>
+          {infiniteTracks.map((trackUrl, i) => {
             const embedSrc = `https://w.soundcloud.com/player/?url=${encodeURIComponent(trackUrl)}&visual=false&color=%23ff2da1&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`
             return (
               <div key={i} style={{flex:'0 0 100%', minWidth:'100%'}}>
@@ -1004,7 +1033,7 @@ export default function App() {
           />
           <div className="hero-text-center">
             <div className="subtitle">{t[language].stats.subtitle}</div>
-            <div className="genres">PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE <span className="badge">•</span></div>
+            <div className="genres">PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE • INDIE DANCE <span className="badge">•</span></div>
           </div>
           <div className="stats reveal" style={{marginTop:16}}>
             <div className="stat">
@@ -1188,8 +1217,8 @@ export default function App() {
             <div className="section-title">{t[language].sections.soundcloud}</div>
             <div style={{marginTop:12}}>
               {Array.isArray(scThumbs) && scThumbs.length > 0
-                ? <ImageCarouselWithLinks items={scThumbs} intervalMs={7000} />
-                : <SoundCloudCarousel tracks={scTracks} intervalMs={6000} />}
+                ? <ImageCarouselWithLinks items={scThumbs} intervalMs={5000} />
+                : <SoundCloudCarousel tracks={scTracks} intervalMs={5000} />}
             </div>
           </section>
         ) : (
