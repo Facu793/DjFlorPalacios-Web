@@ -268,6 +268,21 @@ footer { margin-top: 40px; padding: 24px 0; border-top: 1px solid var(--surface)
 @media (max-width: 640px) { .events .row { flex-direction: column; align-items: flex-start; } .stats { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .top-logo-img { max-height: 120px; } }
 
+/* Mejoras para imágenes en móviles */
+@media (max-width: 768px) {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  .carousel img,
+  .masonry-item img {
+    max-width: 100%;
+    height: auto;
+  }
+  .container {
+    padding: 0 16px;
+  }
+}
 
 /* Masonry gallery */
 .masonry {

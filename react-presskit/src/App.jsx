@@ -5,8 +5,8 @@ import Flag from 'country-flag-icons/react/3x2'
 export default function App() {
   const canvasRef = useRef(null)
   const galleryImages = [
-    '/image/galeria/1.JPEG',
-    '/image/galeria/2.JPEG',
+    './image/galeria/1.JPEG',
+    './image/galeria/2.JPEG',
     '/image/galeria/3.JPG',
     '/image/galeria/4.JPEG',
     '/image/galeria/5.JPEG',
@@ -19,7 +19,7 @@ export default function App() {
     '/image/galeria/12.JPEG',
     '/image/galeria/13.JPEG',
     '/image/galeria/15.JPG',
-    '/image/galeria/14.jpeg',
+    '/image/galeria/14.jpeg', 
   ]
 
   // Lightbox state for gallery
@@ -266,10 +266,19 @@ export default function App() {
   function Carousel({ images, intervalMs = 5000 }) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const rootRef = useRef(null)
     const timerRef = useRef(0)
     const touchRef = useRef({ xStart: 0, xMove: 0, dragging: false })
+
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768)
+      }
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     const goTo = (idx) => {
       const n = images.length
@@ -342,14 +351,15 @@ export default function App() {
         >
           {images.map((src, i) => (
             <div key={i} style={{flex:'0 0 100%', position:'relative'}}>
-              <div style={{position:'relative', width:'100%', aspectRatio:'16 / 9', background:'#111'}}>
+              <div style={{position:'relative', width:'100%', aspectRatio:isMobile ? '4 / 3' : '16 / 9', background:'#111'}}>
                 <img
                   src={src}
                   alt={`Galería ${i+1}`}
                   loading="lazy"
                   style={{
                     position:'absolute', inset:0, width:'100%', height:'100%',
-                    objectFit:'cover'
+                    objectFit:'cover',
+                    maxWidth:'100%'
                   }}
                 />
               </div>
@@ -446,8 +456,17 @@ export default function App() {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
     const [noAnim, setNoAnim] = useState(false)
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
     const rootRef = useRef(null)
     const timerRef = useRef(0)
+    
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768)
+      }
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }, [])
     
     const goTo = (idx) => { const n = images.length || 1; setCurrentIndex(((idx % n) + n) % n) }
     const next = () => goTo(currentIndex + 1)
@@ -517,8 +536,9 @@ export default function App() {
         return () => clearTimeout(t)
       }
     }, [currentIndex, images.length])
-    const CARD = 400
-    const GAP = 48
+    // Tamaños responsive para móviles
+    const CARD = isMobile ? Math.min(320, window.innerWidth - 80) : 400
+    const GAP = isMobile ? 16 : 48
     return (
       <div ref={rootRef} className="soundcloud-carousel-container" style={{position:'relative', overflow:'hidden', width:'100vw', maxWidth:'100vw', marginLeft:'calc(50% - 50vw)', perspective:1200}}>
         <div style={{display:'flex', gap:`${GAP}px`, width:(extendedItems.length) * (CARD + GAP), transform:`translate3d(-${currentIndex * (CARD + GAP)}px, 0, 0)`, transition: noAnim ? 'none' : 'transform 5000ms cubic-bezier(0.4, 0, 0.2, 1)', padding:`0 ${GAP}px`, willChange:'transform', backfaceVisibility:'hidden'}}>
@@ -875,48 +895,62 @@ export default function App() {
     // Throttle del evento wheel a ~60fps (16ms) para mejor rendimiento
     const throttledWheel = throttle(handleWheel, 16)
 
-    const handleTouchStart = (e) => {
-      scrollPosition = window.scrollY || window.pageYOffset
-      targetPosition = scrollPosition
-    }
+    // Detectar si es un dispositivo móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     (window.matchMedia && window.matchMedia('(max-width: 768px)').matches)
 
-    const handleTouchMove = (e) => {
-      if (e.touches.length === 1) {
-        e.preventDefault()
-        const touch = e.touches[0]
-        const currentY = touch.clientY
-        const lastY = window.lastTouchY || currentY
-        const delta = lastY - currentY
-        window.lastTouchY = currentY
-        
-        targetPosition -= delta
-        
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-        targetPosition = Math.max(0, Math.min(targetPosition, maxScroll))
+    // Solo aplicar scroll suave personalizado en desktop
+    if (!isMobile) {
+      const handleTouchStart = (e) => {
+        scrollPosition = window.scrollY || window.pageYOffset
+        targetPosition = scrollPosition
+      }
 
-        if (!isScrolling) {
-          isScrolling = true
-          rafId = requestAnimationFrame(smoothScroll)
+      const handleTouchMove = (e) => {
+        if (e.touches.length === 1) {
+          e.preventDefault()
+          const touch = e.touches[0]
+          const currentY = touch.clientY
+          const lastY = window.lastTouchY || currentY
+          const delta = lastY - currentY
+          window.lastTouchY = currentY
+          
+          targetPosition -= delta
+          
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+          targetPosition = Math.max(0, Math.min(targetPosition, maxScroll))
+
+          if (!isScrolling) {
+            isScrolling = true
+            rafId = requestAnimationFrame(smoothScroll)
+          }
         }
       }
-    }
 
-    const handleTouchEnd = (e) => {
-      window.lastTouchY = null
-    }
+      const handleTouchEnd = (e) => {
+        window.lastTouchY = null
+      }
 
-    // Agregar listeners con throttle para mejor rendimiento
-    window.addEventListener('wheel', throttledWheel, { passive: false })
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-    window.addEventListener('touchmove', handleTouchMove, { passive: false })
-    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+      // Agregar listeners solo en desktop
+      window.addEventListener('wheel', throttledWheel, { passive: false })
+      window.addEventListener('touchstart', handleTouchStart, { passive: true })
+      window.addEventListener('touchmove', handleTouchMove, { passive: false })
+      window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
-    return () => {
-      window.removeEventListener('wheel', throttledWheel)
-      window.removeEventListener('touchstart', handleTouchStart)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchend', handleTouchEnd)
-      if (rafId) cancelAnimationFrame(rafId)
+      return () => {
+        window.removeEventListener('wheel', throttledWheel)
+        window.removeEventListener('touchstart', handleTouchStart)
+        window.removeEventListener('touchmove', handleTouchMove)
+        window.removeEventListener('touchend', handleTouchEnd)
+        if (rafId) cancelAnimationFrame(rafId)
+      }
+    } else {
+      // En móviles, solo agregar el listener de wheel para desktop si se conecta un mouse
+      window.addEventListener('wheel', throttledWheel, { passive: false })
+      return () => {
+        window.removeEventListener('wheel', throttledWheel)
+        if (rafId) cancelAnimationFrame(rafId)
+      }
     }
   }, [])
 
@@ -984,7 +1018,7 @@ export default function App() {
       <canvas ref={canvasRef} id="bg-canvas" aria-hidden="true" style={{position:'fixed', inset:0, zIndex:-2, width:'100vw', height:'100vh', pointerEvents:'none'}} />
       <header>
         <div className="container nav">
-          <div className="logo">DJ PRESSKIT • Florencia Palacios</div>
+          <div className="logo">DJ PRESSKIT • Flor Palacios</div>
           <div className="social-actions">
             <a className="social-btn sc" aria-label="SoundCloud" title="SoundCloud" href="https://soundcloud.com/florpalaciosdj" target="_blank" rel="noopener">
               <SoundCloudIcon src="/image/nubeSounCloud/sounCloud.png" />
@@ -1106,7 +1140,7 @@ export default function App() {
           />
           <div className="hero-text-center">
             <div className="subtitle">{t[language].stats.subtitle}</div>
-            <div className="genres">PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE • INDIE DANCE <span className="badge">•</span></div>
+            <div className="genres">• PROGRESSIVE HOUSE • HOUSE • DEEP HOUSE • ORGANIC HOUSE • INDIE DANCE •</div>
           </div>
           <div className="stats reveal" style={{marginTop:16}}>
             <div className="stat">
