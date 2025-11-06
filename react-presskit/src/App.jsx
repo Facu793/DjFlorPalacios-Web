@@ -875,48 +875,62 @@ export default function App() {
     // Throttle del evento wheel a ~60fps (16ms) para mejor rendimiento
     const throttledWheel = throttle(handleWheel, 16)
 
-    const handleTouchStart = (e) => {
-      scrollPosition = window.scrollY || window.pageYOffset
-      targetPosition = scrollPosition
-    }
+    // Detectar si es un dispositivo móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     (window.matchMedia && window.matchMedia('(max-width: 768px)').matches)
 
-    const handleTouchMove = (e) => {
-      if (e.touches.length === 1) {
-        e.preventDefault()
-        const touch = e.touches[0]
-        const currentY = touch.clientY
-        const lastY = window.lastTouchY || currentY
-        const delta = lastY - currentY
-        window.lastTouchY = currentY
-        
-        targetPosition -= delta
-        
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-        targetPosition = Math.max(0, Math.min(targetPosition, maxScroll))
+    // Solo aplicar scroll suave personalizado en desktop
+    if (!isMobile) {
+      const handleTouchStart = (e) => {
+        scrollPosition = window.scrollY || window.pageYOffset
+        targetPosition = scrollPosition
+      }
 
-        if (!isScrolling) {
-          isScrolling = true
-          rafId = requestAnimationFrame(smoothScroll)
+      const handleTouchMove = (e) => {
+        if (e.touches.length === 1) {
+          e.preventDefault()
+          const touch = e.touches[0]
+          const currentY = touch.clientY
+          const lastY = window.lastTouchY || currentY
+          const delta = lastY - currentY
+          window.lastTouchY = currentY
+          
+          targetPosition -= delta
+          
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+          targetPosition = Math.max(0, Math.min(targetPosition, maxScroll))
+
+          if (!isScrolling) {
+            isScrolling = true
+            rafId = requestAnimationFrame(smoothScroll)
+          }
         }
       }
-    }
 
-    const handleTouchEnd = (e) => {
-      window.lastTouchY = null
-    }
+      const handleTouchEnd = (e) => {
+        window.lastTouchY = null
+      }
 
-    // Agregar listeners con throttle para mejor rendimiento
-    window.addEventListener('wheel', throttledWheel, { passive: false })
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-    window.addEventListener('touchmove', handleTouchMove, { passive: false })
-    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+      // Agregar listeners solo en desktop
+      window.addEventListener('wheel', throttledWheel, { passive: false })
+      window.addEventListener('touchstart', handleTouchStart, { passive: true })
+      window.addEventListener('touchmove', handleTouchMove, { passive: false })
+      window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
-    return () => {
-      window.removeEventListener('wheel', throttledWheel)
-      window.removeEventListener('touchstart', handleTouchStart)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchend', handleTouchEnd)
-      if (rafId) cancelAnimationFrame(rafId)
+      return () => {
+        window.removeEventListener('wheel', throttledWheel)
+        window.removeEventListener('touchstart', handleTouchStart)
+        window.removeEventListener('touchmove', handleTouchMove)
+        window.removeEventListener('touchend', handleTouchEnd)
+        if (rafId) cancelAnimationFrame(rafId)
+      }
+    } else {
+      // En móviles, solo agregar el listener de wheel para desktop si se conecta un mouse
+      window.addEventListener('wheel', throttledWheel, { passive: false })
+      return () => {
+        window.removeEventListener('wheel', throttledWheel)
+        if (rafId) cancelAnimationFrame(rafId)
+      }
     }
   }, [])
 
