@@ -516,7 +516,7 @@ export default function App() {
             const isCenter = clamped === 0
             const rotate = isCenter ? 0 : clamped * 18 // grados
             const translateZ = isCenter ? 20 : -Math.abs(clamped) * 60
-            const scale = isCenter ? 1.08 : 1 - Math.abs(clamped) * 0.12
+            const scale = 1
             const opacity = isCenter ? 1 : 1 - Math.abs(clamped) * 0.2
             const zIndex = isCenter ? 3 : 1
             // Usar una key única basada en el índice del item original para evitar re-renders innecesarios
