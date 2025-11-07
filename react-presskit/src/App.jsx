@@ -1391,14 +1391,6 @@ export default function App() {
                   ›
                 </button>
               </div>
-              <div style={{
-                marginTop: 12,
-                textAlign: 'center',
-                color: 'var(--muted)',
-                fontSize: '14px'
-              }}>
-                {galleryIndex + 1} / {galleryImages.length}
-              </div>
             </div>
           ) : (
             /* Layout masonry para desktop */
