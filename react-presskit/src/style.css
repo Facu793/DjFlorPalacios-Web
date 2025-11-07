@@ -144,6 +144,9 @@ header {
 section { padding: 28px 0 6px; }
 .section-title { font-size: 24px; color: #ffd3ec; letter-spacing: 8px; text-transform: uppercase; text-align: center; margin: 8px 0 22px; text-shadow: 0 0 10px rgba(255,110,199,.25); font-weight: 700; }
 .modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.bio-modules { grid-template-columns: 1fr 1fr; gap: 20px; }
+.bio-image { position: sticky; top: var(--header-h, 70px); align-self: start; }
+.bio-image img { width: 100%; height: auto; border-radius: 12px; object-fit: cover; }
 .module-card { 
   background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); 
   border: 1px solid var(--surface); 
@@ -266,6 +269,21 @@ footer { margin-top: 40px; padding: 24px 0; border-top: 1px solid var(--surface)
   }
 }
 @media (max-width: 640px) { .events .row { flex-direction: column; align-items: flex-start; } .stats { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .stat {
+    padding: 14px;
+  }
+  .stat .num {
+    font-size: 24px;
+  }
+  .stat .label {
+    font-size: 11px;
+  }
+}
 @media (max-width: 640px) { .top-logo-img { max-height: 120px; } }
 
 /* Mejoras para imágenes en móviles */
@@ -281,6 +299,21 @@ footer { margin-top: 40px; padding: 24px 0; border-top: 1px solid var(--surface)
   }
   .container {
     padding: 0 16px;
+  }
+  .bio-modules {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .bio-image {
+    order: -1;
+    position: relative;
+    top: auto;
+    align-self: stretch;
+  }
+  .bio-image img {
+    max-width: 100%;
+    height: auto;
   }
 }
 

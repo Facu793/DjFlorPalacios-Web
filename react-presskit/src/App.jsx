@@ -95,7 +95,7 @@ export default function App() {
         soundcloud: 'SOUNDCLOUD'
       },
       bio: {
-        p1: 'Flor Palacios es una DJ oriunda de Santa Fe, Argentina. Actualmente se encuenra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽. Con más de 7 años de trayectoria, su carrera la llevó a diferentes escenarios. Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. Su objetivo es claro: transmitir emociones y generar conexión en la pista.',
+        p1: 'Flor Palacios es una DJ oriunda de Santa Fe, Argentina. Actualmente se encuentra en constante movimiento con base en Rosario 🇦🇷 y Tulum🇲🇽. Con más de 7 años de trayectoria, su carrera la llevó a diferentes escenarios. Su sonido se mueve entre el Progressive House, Deep House e Indie Dance, siempre con un enfoque versátil que se adapta al contexto y a la energía del público. Su objetivo es claro: transmitir emociones y generar conexión en la pista.',
         p2: 'En su recorrido compartió cabina con DJs nacionales e internacionales como Budakid, Chapa & Castelo, Greta Meier, John Cosani y Kabi, entre otros. Esto le permitió presentarse en ciudades como Buenos Aires, Rosario y Bariloche, y también expandir su música fuera del país, con presentaciones en Tulum (México).',
         p3: 'Actualmente, Flor está perfeccionándose en producción musical junto a referentes del género, como Ignacio Berardi, Agustín Pietrocola; con el objetivo de lanzar sus próximos tracks.'
       },
@@ -1213,8 +1213,8 @@ export default function App() {
 
         <section id="modulos">
           <div className="section-title">{t[language].sections.bio}</div>
-          <div className="modules" style={{gridTemplateColumns:'1fr 1fr', gap:'20px'}}>
-            <div className="module-card reveal">
+          <div className="modules bio-modules">
+            <div className="module-card reveal bio-text">
               <p>
                 {t[language].bio.p1}
               </p>
@@ -1225,7 +1225,7 @@ export default function App() {
                 {t[language].bio.p3}
               </p>
             </div>
-            <div className="module-card reveal sticky-image" style={{position:'sticky', top:'var(--header-h, 70px)', alignSelf:'start'}}>
+            <div className="module-card reveal sticky-image bio-image">
               <img 
                 src="./image/imagenCuerpo/image1.JPEG" 
                 alt="Flor Palacios DJ" 
